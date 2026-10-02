@@ -1,0 +1,36 @@
+EXIT 1
+{
+  "offline_check": "passed",
+  "source_sha256": "0b68faa52b52b0595647b57d09ebd9767d3d7eccde609d3a964400f69cd80d5b",
+  "frames": 166,
+  "duration_s": 13.474580736015923,
+  "start_q": [
+    0.010872053101396162,
+    0.20618753337910967,
+    -0.08258945601586909,
+    -0.13790341039139342,
+    0.03910124361028444,
+    -0.1707103074692906
+  ],
+  "end_q": [
+    0.010872053101396162,
+    0.013160906385900617,
+    0.005912870984969842,
+    -0.0001907377737087046,
+    0.02536812390325771,
+    -0.17109178301670802
+  ],
+  "will_connect_hardware": true
+}
+现场测试：清空运动路径，配置能承接失能臂体的支撑。停止会失能，不保证悬停。
+保持测试不走轨迹；仅显式 --approach 时缓慢接近起点。结束前有 5 秒终点保持，然后失能。
+现场准备好后输入 READY；其他输入退出：Joint command minor overshoot, clipped: joint3: 0.000 -> [-3.142, 0.000]
+测试开始，最长 30.5 秒；Ctrl+C 立即停止并失能。
+Joint command minor overshoot, clipped: joint3: 0.012 -> [-3.142, 0.000]
+Joint command minor overshoot, clipped: joint3: 0.012 -> [-3.142, 0.000]
+Joint command minor overshoot, clipped: joint3: 0.012 -> [-3.142, 0.000]
+Joint command minor overshoot, clipped: joint3: 0.011 -> [-3.142, 0.000]
+Joint command minor overshoot, clipped: joint3: 0.004 -> [-3.142, 0.000]
+Control loop error: Not at replay start: max error 0.1125 rad; no automatic approach
+Emergency stop!
+RESULT /home/dimos/a1z-experiments/2026-10-02/replay-results/105202033740544-replay.json failed RuntimeError("ValueError('Not at replay start: max error 0.1125 rad; no automatic approach')") []

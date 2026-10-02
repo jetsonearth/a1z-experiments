@@ -1,0 +1,1427 @@
+{
+  "metadata": {
+    "device": "RealSense D405",
+    "depth_scale_m": 9.999999747378752e-05,
+    "rgb_intrinsics": {
+      "width": 640,
+      "height": 480,
+      "ppx": 316.01068115234375,
+      "ppy": 234.85256958007812,
+      "fx": 394.8290710449219,
+      "fy": 394.41204833984375,
+      "coeffs": [
+        -0.054658193141222,
+        0.05967361107468605,
+        0.00022569828433915973,
+        -3.146376911900006e-05,
+        -0.02019789256155491
+      ]
+    },
+    "distortion_model": "distortion.inverse_brown_conrady",
+    "host_clock": "time.monotonic; same Jetson clock as teach.py",
+    "timing_boundary": "host receipt after wait_for_frames, not exposure; device clock retained separately",
+    "valid_depth_fraction": 0.9015104166666666,
+    "rgb_mean": 106.74874891493056,
+    "rgb_std": 60.855292136416296,
+    "frames": 107,
+    "error": null,
+    "duration_s": 3.5308200959989335,
+    "receipt_hz": 30.021353996516964,
+    "max_receipt_gap_s": 0.03431500800070353,
+    "skipped_rgb_frames": 0,
+    "recording_bytes": 0
+  },
+  "frames": [
+    {
+      "host_monotonic_s": 100805.06545776,
+      "rgb": {
+        "frame_number": 0,
+        "device_timestamp_ms": 1789400861232.997,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 0,
+        "device_timestamp_ms": 1789400861232.684,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.096803488,
+      "rgb": {
+        "frame_number": 1,
+        "device_timestamp_ms": 1789400861266.9197,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 1,
+        "device_timestamp_ms": 1789400861266.6104,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.128708,
+      "rgb": {
+        "frame_number": 2,
+        "device_timestamp_ms": 1789400861300.8606,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 2,
+        "device_timestamp_ms": 1789400861300.551,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.161740672,
+      "rgb": {
+        "frame_number": 3,
+        "device_timestamp_ms": 1789400861334.8157,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 3,
+        "device_timestamp_ms": 1789400861334.506,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.195182336,
+      "rgb": {
+        "frame_number": 4,
+        "device_timestamp_ms": 1789400861368.6904,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 4,
+        "device_timestamp_ms": 1789400861368.3816,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.228217984,
+      "rgb": {
+        "frame_number": 5,
+        "device_timestamp_ms": 1789400861402.5667,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 5,
+        "device_timestamp_ms": 1789400861402.2578,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.26199488,
+      "rgb": {
+        "frame_number": 6,
+        "device_timestamp_ms": 1789400861436.4434,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 6,
+        "device_timestamp_ms": 1789400861436.1345,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.295202944,
+      "rgb": {
+        "frame_number": 7,
+        "device_timestamp_ms": 1789400861470.2678,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 7,
+        "device_timestamp_ms": 1789400861469.9595,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.328738848,
+      "rgb": {
+        "frame_number": 8,
+        "device_timestamp_ms": 1789400861504.0852,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 8,
+        "device_timestamp_ms": 1789400861503.7769,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.362268192,
+      "rgb": {
+        "frame_number": 9,
+        "device_timestamp_ms": 1789400861537.8975,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 9,
+        "device_timestamp_ms": 1789400861537.589,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.395326176,
+      "rgb": {
+        "frame_number": 10,
+        "device_timestamp_ms": 1789400861571.6533,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 10,
+        "device_timestamp_ms": 1789400861571.3457,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.428946528,
+      "rgb": {
+        "frame_number": 11,
+        "device_timestamp_ms": 1789400861605.3972,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 11,
+        "device_timestamp_ms": 1789400861605.0896,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.462309664,
+      "rgb": {
+        "frame_number": 12,
+        "device_timestamp_ms": 1789400861639.129,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 12,
+        "device_timestamp_ms": 1789400861638.8215,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.495569312,
+      "rgb": {
+        "frame_number": 13,
+        "device_timestamp_ms": 1789400861672.8206,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 13,
+        "device_timestamp_ms": 1789400861672.5134,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.528910208,
+      "rgb": {
+        "frame_number": 14,
+        "device_timestamp_ms": 1789400861706.4968,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 14,
+        "device_timestamp_ms": 1789400861706.19,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.562170528,
+      "rgb": {
+        "frame_number": 15,
+        "device_timestamp_ms": 1789400861740.1582,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 15,
+        "device_timestamp_ms": 1789400861739.8513,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.595302208,
+      "rgb": {
+        "frame_number": 16,
+        "device_timestamp_ms": 1789400861773.8042,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 16,
+        "device_timestamp_ms": 1789400861773.4976,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.629152192,
+      "rgb": {
+        "frame_number": 17,
+        "device_timestamp_ms": 1789400861807.4358,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 17,
+        "device_timestamp_ms": 1789400861807.1294,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.6620696,
+      "rgb": {
+        "frame_number": 18,
+        "device_timestamp_ms": 1789400861841.0522,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 18,
+        "device_timestamp_ms": 1789400861840.7456,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.695641024,
+      "rgb": {
+        "frame_number": 19,
+        "device_timestamp_ms": 1789400861874.653,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 19,
+        "device_timestamp_ms": 1789400861874.3467,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.72909872,
+      "rgb": {
+        "frame_number": 20,
+        "device_timestamp_ms": 1789400861908.224,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 20,
+        "device_timestamp_ms": 1789400861907.9182,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.762556608,
+      "rgb": {
+        "frame_number": 21,
+        "device_timestamp_ms": 1789400861941.7786,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 21,
+        "device_timestamp_ms": 1789400861941.4717,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.795681632,
+      "rgb": {
+        "frame_number": 22,
+        "device_timestamp_ms": 1789400861975.315,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 22,
+        "device_timestamp_ms": 1789400861975.0093,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.828682368,
+      "rgb": {
+        "frame_number": 23,
+        "device_timestamp_ms": 1789400862008.8293,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 23,
+        "device_timestamp_ms": 1789400862008.524,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.86202464,
+      "rgb": {
+        "frame_number": 24,
+        "device_timestamp_ms": 1789400862042.3262,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 24,
+        "device_timestamp_ms": 1789400862042.021,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.89517296,
+      "rgb": {
+        "frame_number": 25,
+        "device_timestamp_ms": 1789400862075.8057,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 25,
+        "device_timestamp_ms": 1789400862075.5005,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.928842016,
+      "rgb": {
+        "frame_number": 26,
+        "device_timestamp_ms": 1789400862109.27,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 26,
+        "device_timestamp_ms": 1789400862108.965,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.96236464,
+      "rgb": {
+        "frame_number": 27,
+        "device_timestamp_ms": 1789400862142.7168,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 27,
+        "device_timestamp_ms": 1789400862142.412,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100805.995681312,
+      "rgb": {
+        "frame_number": 28,
+        "device_timestamp_ms": 1789400862176.1462,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 28,
+        "device_timestamp_ms": 1789400862175.8416,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.028746176,
+      "rgb": {
+        "frame_number": 29,
+        "device_timestamp_ms": 1789400862209.5596,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 29,
+        "device_timestamp_ms": 1789400862209.255,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.062150944,
+      "rgb": {
+        "frame_number": 30,
+        "device_timestamp_ms": 1789400862242.9553,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 30,
+        "device_timestamp_ms": 1789400862242.651,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.095960288,
+      "rgb": {
+        "frame_number": 31,
+        "device_timestamp_ms": 1789400862276.3335,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 31,
+        "device_timestamp_ms": 1789400862276.0293,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.129115072,
+      "rgb": {
+        "frame_number": 32,
+        "device_timestamp_ms": 1789400862309.6943,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 32,
+        "device_timestamp_ms": 1789400862309.3901,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.16257168,
+      "rgb": {
+        "frame_number": 33,
+        "device_timestamp_ms": 1789400862343.0374,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 33,
+        "device_timestamp_ms": 1789400862342.7336,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.195526336,
+      "rgb": {
+        "frame_number": 34,
+        "device_timestamp_ms": 1789400862376.363,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 34,
+        "device_timestamp_ms": 1789400862376.0593,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.229137312,
+      "rgb": {
+        "frame_number": 35,
+        "device_timestamp_ms": 1789400862409.6702,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 35,
+        "device_timestamp_ms": 1789400862409.3667,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.26200464,
+      "rgb": {
+        "frame_number": 36,
+        "device_timestamp_ms": 1789400862442.961,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 36,
+        "device_timestamp_ms": 1789400862442.6575,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.295805088,
+      "rgb": {
+        "frame_number": 37,
+        "device_timestamp_ms": 1789400862476.234,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 37,
+        "device_timestamp_ms": 1789400862475.9307,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.329385216,
+      "rgb": {
+        "frame_number": 38,
+        "device_timestamp_ms": 1789400862509.4895,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 38,
+        "device_timestamp_ms": 1789400862509.1865,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.3625736,
+      "rgb": {
+        "frame_number": 39,
+        "device_timestamp_ms": 1789400862542.7275,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 39,
+        "device_timestamp_ms": 1789400862542.4246,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.395984,
+      "rgb": {
+        "frame_number": 40,
+        "device_timestamp_ms": 1789400862575.9482,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 40,
+        "device_timestamp_ms": 1789400862575.6453,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.429242208,
+      "rgb": {
+        "frame_number": 41,
+        "device_timestamp_ms": 1789400862609.1511,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 41,
+        "device_timestamp_ms": 1789400862608.8484,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.462742816,
+      "rgb": {
+        "frame_number": 42,
+        "device_timestamp_ms": 1789400862642.3367,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 42,
+        "device_timestamp_ms": 1789400862642.0342,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.495758496,
+      "rgb": {
+        "frame_number": 43,
+        "device_timestamp_ms": 1789400862675.5046,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 43,
+        "device_timestamp_ms": 1789400862675.2021,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.529018592,
+      "rgb": {
+        "frame_number": 44,
+        "device_timestamp_ms": 1789400862708.655,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 44,
+        "device_timestamp_ms": 1789400862708.3528,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.562474592,
+      "rgb": {
+        "frame_number": 45,
+        "device_timestamp_ms": 1789400862741.7878,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 45,
+        "device_timestamp_ms": 1789400862741.4858,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.596077504,
+      "rgb": {
+        "frame_number": 46,
+        "device_timestamp_ms": 1789400862774.903,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 46,
+        "device_timestamp_ms": 1789400862774.6013,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.629252352,
+      "rgb": {
+        "frame_number": 47,
+        "device_timestamp_ms": 1789400862808.001,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 47,
+        "device_timestamp_ms": 1789400862807.6992,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.662772768,
+      "rgb": {
+        "frame_number": 48,
+        "device_timestamp_ms": 1789400862841.0813,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 48,
+        "device_timestamp_ms": 1789400862840.7788,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.695829856,
+      "rgb": {
+        "frame_number": 49,
+        "device_timestamp_ms": 1789400862874.143,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 49,
+        "device_timestamp_ms": 1789400862873.8418,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.729305952,
+      "rgb": {
+        "frame_number": 50,
+        "device_timestamp_ms": 1789400862907.1885,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 50,
+        "device_timestamp_ms": 1789400862906.8872,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.762749824,
+      "rgb": {
+        "frame_number": 51,
+        "device_timestamp_ms": 1789400862940.216,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 51,
+        "device_timestamp_ms": 1789400862939.915,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.795831424,
+      "rgb": {
+        "frame_number": 52,
+        "device_timestamp_ms": 1789400862973.2263,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 52,
+        "device_timestamp_ms": 1789400862972.9253,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.829209696,
+      "rgb": {
+        "frame_number": 53,
+        "device_timestamp_ms": 1789400863006.219,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 53,
+        "device_timestamp_ms": 1789400863005.9182,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.862593152,
+      "rgb": {
+        "frame_number": 54,
+        "device_timestamp_ms": 1789400863039.194,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 54,
+        "device_timestamp_ms": 1789400863038.8936,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.896197472,
+      "rgb": {
+        "frame_number": 55,
+        "device_timestamp_ms": 1789400863072.1516,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 55,
+        "device_timestamp_ms": 1789400863071.8513,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.92925808,
+      "rgb": {
+        "frame_number": 56,
+        "device_timestamp_ms": 1789400863105.0918,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 56,
+        "device_timestamp_ms": 1789400863104.7915,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.962878464,
+      "rgb": {
+        "frame_number": 57,
+        "device_timestamp_ms": 1789400863138.0144,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 57,
+        "device_timestamp_ms": 1789400863137.7144,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100806.995379328,
+      "rgb": {
+        "frame_number": 58,
+        "device_timestamp_ms": 1789400863170.93,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 58,
+        "device_timestamp_ms": 1789400863170.6248,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.028741248,
+      "rgb": {
+        "frame_number": 59,
+        "device_timestamp_ms": 1789400863204.2869,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 59,
+        "device_timestamp_ms": 1789400863203.9827,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.062563936,
+      "rgb": {
+        "frame_number": 60,
+        "device_timestamp_ms": 1789400863237.6401,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 60,
+        "device_timestamp_ms": 1789400863237.336,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.09591456,
+      "rgb": {
+        "frame_number": 61,
+        "device_timestamp_ms": 1789400863270.9897,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 61,
+        "device_timestamp_ms": 1789400863270.6848,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.129323872,
+      "rgb": {
+        "frame_number": 62,
+        "device_timestamp_ms": 1789400863304.3347,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 62,
+        "device_timestamp_ms": 1789400863304.0308,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.16277232,
+      "rgb": {
+        "frame_number": 63,
+        "device_timestamp_ms": 1789400863337.6772,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 63,
+        "device_timestamp_ms": 1789400863337.3733,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.195639808,
+      "rgb": {
+        "frame_number": 64,
+        "device_timestamp_ms": 1789400863371.0159,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 64,
+        "device_timestamp_ms": 1789400863370.712,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.229515008,
+      "rgb": {
+        "frame_number": 65,
+        "device_timestamp_ms": 1789400863404.351,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 65,
+        "device_timestamp_ms": 1789400863404.047,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.262475424,
+      "rgb": {
+        "frame_number": 66,
+        "device_timestamp_ms": 1789400863437.6824,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 66,
+        "device_timestamp_ms": 1789400863437.3787,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.296064928,
+      "rgb": {
+        "frame_number": 67,
+        "device_timestamp_ms": 1789400863471.0103,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 67,
+        "device_timestamp_ms": 1789400863470.7065,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.329592064,
+      "rgb": {
+        "frame_number": 68,
+        "device_timestamp_ms": 1789400863504.3345,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 68,
+        "device_timestamp_ms": 1789400863504.0308,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.362717664,
+      "rgb": {
+        "frame_number": 69,
+        "device_timestamp_ms": 1789400863537.655,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 69,
+        "device_timestamp_ms": 1789400863537.3513,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.396240192,
+      "rgb": {
+        "frame_number": 70,
+        "device_timestamp_ms": 1789400863570.972,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 70,
+        "device_timestamp_ms": 1789400863570.6682,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.429400736,
+      "rgb": {
+        "frame_number": 71,
+        "device_timestamp_ms": 1789400863604.2852,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 71,
+        "device_timestamp_ms": 1789400863603.9817,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.462370112,
+      "rgb": {
+        "frame_number": 72,
+        "device_timestamp_ms": 1789400863637.595,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 72,
+        "device_timestamp_ms": 1789400863637.2913,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.49578816,
+      "rgb": {
+        "frame_number": 73,
+        "device_timestamp_ms": 1789400863670.901,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 73,
+        "device_timestamp_ms": 1789400863670.5974,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.529053984,
+      "rgb": {
+        "frame_number": 74,
+        "device_timestamp_ms": 1789400863704.2034,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 74,
+        "device_timestamp_ms": 1789400863703.8997,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.562732928,
+      "rgb": {
+        "frame_number": 75,
+        "device_timestamp_ms": 1789400863737.501,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 75,
+        "device_timestamp_ms": 1789400863737.1975,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.596048832,
+      "rgb": {
+        "frame_number": 76,
+        "device_timestamp_ms": 1789400863770.7961,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 76,
+        "device_timestamp_ms": 1789400863770.4927,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.629613728,
+      "rgb": {
+        "frame_number": 77,
+        "device_timestamp_ms": 1789400863804.0876,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 77,
+        "device_timestamp_ms": 1789400863803.7842,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.662787936,
+      "rgb": {
+        "frame_number": 78,
+        "device_timestamp_ms": 1789400863837.3755,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 78,
+        "device_timestamp_ms": 1789400863837.072,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.696097184,
+      "rgb": {
+        "frame_number": 79,
+        "device_timestamp_ms": 1789400863870.6597,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 79,
+        "device_timestamp_ms": 1789400863870.3562,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.72921152,
+      "rgb": {
+        "frame_number": 80,
+        "device_timestamp_ms": 1789400863903.9402,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 80,
+        "device_timestamp_ms": 1789400863903.637,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.762561088,
+      "rgb": {
+        "frame_number": 81,
+        "device_timestamp_ms": 1789400863937.2173,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 81,
+        "device_timestamp_ms": 1789400863936.9138,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.79607168,
+      "rgb": {
+        "frame_number": 82,
+        "device_timestamp_ms": 1789400863970.4905,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 82,
+        "device_timestamp_ms": 1789400863970.1873,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.82912512,
+      "rgb": {
+        "frame_number": 83,
+        "device_timestamp_ms": 1789400864003.7603,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 83,
+        "device_timestamp_ms": 1789400864003.4568,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.862821984,
+      "rgb": {
+        "frame_number": 84,
+        "device_timestamp_ms": 1789400864037.0261,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 84,
+        "device_timestamp_ms": 1789400864036.723,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.895784448,
+      "rgb": {
+        "frame_number": 85,
+        "device_timestamp_ms": 1789400864070.2886,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 85,
+        "device_timestamp_ms": 1789400864069.9854,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.929718368,
+      "rgb": {
+        "frame_number": 86,
+        "device_timestamp_ms": 1789400864103.5474,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 86,
+        "device_timestamp_ms": 1789400864103.2441,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.963094688,
+      "rgb": {
+        "frame_number": 87,
+        "device_timestamp_ms": 1789400864136.8025,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 87,
+        "device_timestamp_ms": 1789400864136.4993,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100807.99594128,
+      "rgb": {
+        "frame_number": 88,
+        "device_timestamp_ms": 1789400864170.0554,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 88,
+        "device_timestamp_ms": 1789400864169.7498,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.028900704,
+      "rgb": {
+        "frame_number": 89,
+        "device_timestamp_ms": 1789400864203.3008,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 89,
+        "device_timestamp_ms": 1789400864202.9978,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.062057376,
+      "rgb": {
+        "frame_number": 90,
+        "device_timestamp_ms": 1789400864236.544,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 90,
+        "device_timestamp_ms": 1789400864236.2407,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.095957344,
+      "rgb": {
+        "frame_number": 91,
+        "device_timestamp_ms": 1789400864269.782,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 91,
+        "device_timestamp_ms": 1789400864269.479,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.12949296,
+      "rgb": {
+        "frame_number": 92,
+        "device_timestamp_ms": 1789400864303.0156,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 92,
+        "device_timestamp_ms": 1789400864302.7126,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.162591648,
+      "rgb": {
+        "frame_number": 93,
+        "device_timestamp_ms": 1789400864336.2444,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 93,
+        "device_timestamp_ms": 1789400864335.9414,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.19573648,
+      "rgb": {
+        "frame_number": 94,
+        "device_timestamp_ms": 1789400864369.4683,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 94,
+        "device_timestamp_ms": 1789400864369.1655,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.229436448,
+      "rgb": {
+        "frame_number": 95,
+        "device_timestamp_ms": 1789400864402.6875,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 95,
+        "device_timestamp_ms": 1789400864402.3848,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.262914528,
+      "rgb": {
+        "frame_number": 96,
+        "device_timestamp_ms": 1789400864435.902,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 96,
+        "device_timestamp_ms": 1789400864435.5994,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.295361728,
+      "rgb": {
+        "frame_number": 97,
+        "device_timestamp_ms": 1789400864469.1118,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 97,
+        "device_timestamp_ms": 1789400864468.809,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.329676736,
+      "rgb": {
+        "frame_number": 98,
+        "device_timestamp_ms": 1789400864502.317,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 98,
+        "device_timestamp_ms": 1789400864502.0142,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.362879104,
+      "rgb": {
+        "frame_number": 99,
+        "device_timestamp_ms": 1789400864535.517,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 99,
+        "device_timestamp_ms": 1789400864535.2144,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.396189344,
+      "rgb": {
+        "frame_number": 100,
+        "device_timestamp_ms": 1789400864568.7124,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 100,
+        "device_timestamp_ms": 1789400864568.4097,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.429806752,
+      "rgb": {
+        "frame_number": 101,
+        "device_timestamp_ms": 1789400864601.903,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 101,
+        "device_timestamp_ms": 1789400864601.5996,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.462906528,
+      "rgb": {
+        "frame_number": 102,
+        "device_timestamp_ms": 1789400864635.0881,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 102,
+        "device_timestamp_ms": 1789400864634.7854,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.496278592,
+      "rgb": {
+        "frame_number": 103,
+        "device_timestamp_ms": 1789400864668.2693,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 103,
+        "device_timestamp_ms": 1789400864667.9668,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.529477504,
+      "rgb": {
+        "frame_number": 104,
+        "device_timestamp_ms": 1789400864701.4456,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 104,
+        "device_timestamp_ms": 1789400864701.143,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.563137376,
+      "rgb": {
+        "frame_number": 105,
+        "device_timestamp_ms": 1789400864734.6172,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 105,
+        "device_timestamp_ms": 1789400864734.315,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    },
+    {
+      "host_monotonic_s": 100808.596277856,
+      "rgb": {
+        "frame_number": 106,
+        "device_timestamp_ms": 1789400864767.7842,
+        "timestamp_domain": "timestamp_domain.global_time"
+      },
+      "depth": {
+        "frame_number": 106,
+        "device_timestamp_ms": 1789400864767.4817,
+        "timestamp_domain": "timestamp_domain.global_time"
+      }
+    }
+  ]
+}

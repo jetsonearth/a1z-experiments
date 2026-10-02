@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.lock
+console-latest.log
+.DS_Store
+.env
+.env.*
+.venv/

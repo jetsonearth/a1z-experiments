@@ -1,0 +1,42 @@
+{
+  "device": "RealSense D405",
+  "depth_scale_m": 9.999999747378752e-05,
+  "rgb_intrinsics": {
+    "width": 640,
+    "height": 480,
+    "ppx": 316.01068115234375,
+    "ppy": 234.85256958007812,
+    "fx": 394.8290710449219,
+    "fy": 394.41204833984375,
+    "coeffs": [
+      -0.054658193141222,
+      0.05967361107468605,
+      0.00022569828433915973,
+      -3.146376911900006e-05,
+      -0.02019789256155491
+    ]
+  },
+  "distortion_model": "distortion.inverse_brown_conrady",
+  "depth_video_saved": false,
+  "action_defined": false,
+  "timing_boundary": "host receipt, not calibrated exposure; nominal video grid is 30 fps",
+  "frames": 107,
+  "error": null,
+  "receipt_hz": 30.028145142452743,
+  "max_receipt_gap_s": 0.03432556800544262,
+  "skipped_rgb_frames": 0,
+  "video_checks": [
+    {
+      "file": "videos/observation.images.wrist/chunk-000/file-000.mp4",
+      "programs": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 640,
+          "height": 480,
+          "nb_read_frames": "107"
+        }
+      ]
+    }
+  ]
+}

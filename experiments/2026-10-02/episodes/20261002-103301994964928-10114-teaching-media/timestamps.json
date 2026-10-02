@@ -1,0 +1,492 @@
+{
+  "metadata": {
+    "dataset_dir": "/home/dimos/a1z-experiments/2026-10-02/datasets/20261002-103293843182336",
+    "depth_video_saved": false,
+    "action_defined": false,
+    "timing_boundary": "host receipt, not calibrated exposure; nominal video grid is 30 fps",
+    "device": "RealSense D405",
+    "depth_scale_m": 9.999999747378752e-05,
+    "rgb_intrinsics": {
+      "width": 640,
+      "height": 480,
+      "ppx": 316.01068115234375,
+      "ppy": 234.85256958007812,
+      "fx": 394.8290710449219,
+      "fy": 394.41204833984375,
+      "coeffs": [
+        -0.054658193141222,
+        0.05967361107468605,
+        0.00022569828433915973,
+        -3.146376911900006e-05,
+        -0.02019789256155491
+      ]
+    },
+    "distortion_model": "distortion.inverse_brown_conrady",
+    "frames": 51,
+    "stop_reason": "requested_stop",
+    "receipt_hz": 30.057420156474862,
+    "max_receipt_gap_s": 0.034113183995941654,
+    "skipped_rgb_frames": 0
+  },
+  "frames": [
+    {
+      "host_monotonic_s": 103300.362082208,
+      "rgb_device_timestamp_ms": 1789403356529.2808,
+      "rgb_frame_number": 0,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356528.969,
+      "depth_frame_number": 0,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.392325472,
+      "rgb_device_timestamp_ms": 1789403356563.1514,
+      "rgb_frame_number": 1,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356562.8425,
+      "depth_frame_number": 1,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.424750176,
+      "rgb_device_timestamp_ms": 1789403356597.0413,
+      "rgb_frame_number": 2,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356596.7322,
+      "depth_frame_number": 2,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.45796816,
+      "rgb_device_timestamp_ms": 1789403356630.9473,
+      "rgb_frame_number": 3,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356630.6382,
+      "depth_frame_number": 3,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.490719168,
+      "rgb_device_timestamp_ms": 1789403356664.776,
+      "rgb_frame_number": 4,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356664.4675,
+      "depth_frame_number": 4,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.524608096,
+      "rgb_device_timestamp_ms": 1789403356698.6077,
+      "rgb_frame_number": 5,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356698.2993,
+      "depth_frame_number": 5,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.558084992,
+      "rgb_device_timestamp_ms": 1789403356732.4417,
+      "rgb_frame_number": 6,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356732.133,
+      "depth_frame_number": 6,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.590960192,
+      "rgb_device_timestamp_ms": 1789403356766.2148,
+      "rgb_frame_number": 7,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356765.907,
+      "depth_frame_number": 7,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.62454928,
+      "rgb_device_timestamp_ms": 1789403356799.981,
+      "rgb_frame_number": 8,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356799.673,
+      "depth_frame_number": 8,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.6574544,
+      "rgb_device_timestamp_ms": 1789403356833.7422,
+      "rgb_frame_number": 9,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356833.4343,
+      "depth_frame_number": 9,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.691032704,
+      "rgb_device_timestamp_ms": 1789403356867.455,
+      "rgb_frame_number": 10,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356867.1477,
+      "depth_frame_number": 10,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.724161984,
+      "rgb_device_timestamp_ms": 1789403356901.1572,
+      "rgb_frame_number": 11,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356900.85,
+      "depth_frame_number": 11,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.757571616,
+      "rgb_device_timestamp_ms": 1789403356934.8484,
+      "rgb_frame_number": 12,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356934.5413,
+      "depth_frame_number": 12,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.79104864,
+      "rgb_device_timestamp_ms": 1789403356968.5022,
+      "rgb_frame_number": 13,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403356968.1956,
+      "depth_frame_number": 13,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.824310208,
+      "rgb_device_timestamp_ms": 1789403357002.1423,
+      "rgb_frame_number": 14,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357001.8357,
+      "depth_frame_number": 14,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.857229824,
+      "rgb_device_timestamp_ms": 1789403357035.7683,
+      "rgb_frame_number": 15,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357035.462,
+      "depth_frame_number": 15,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.891343008,
+      "rgb_device_timestamp_ms": 1789403357069.366,
+      "rgb_frame_number": 16,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357069.0596,
+      "depth_frame_number": 16,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.924151072,
+      "rgb_device_timestamp_ms": 1789403357102.9482,
+      "rgb_frame_number": 17,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357102.642,
+      "depth_frame_number": 17,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.957981312,
+      "rgb_device_timestamp_ms": 1789403357136.515,
+      "rgb_frame_number": 18,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357136.209,
+      "depth_frame_number": 18,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103300.990596256,
+      "rgb_device_timestamp_ms": 1789403357170.0613,
+      "rgb_frame_number": 19,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357169.7554,
+      "depth_frame_number": 19,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.024289952,
+      "rgb_device_timestamp_ms": 1789403357203.5913,
+      "rgb_frame_number": 20,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357203.286,
+      "depth_frame_number": 20,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.057861184,
+      "rgb_device_timestamp_ms": 1789403357237.1055,
+      "rgb_frame_number": 21,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357236.7988,
+      "depth_frame_number": 21,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.091434336,
+      "rgb_device_timestamp_ms": 1789403357270.6023,
+      "rgb_frame_number": 22,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357270.2969,
+      "depth_frame_number": 22,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.124317856,
+      "rgb_device_timestamp_ms": 1789403357304.1868,
+      "rgb_frame_number": 23,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357303.8806,
+      "depth_frame_number": 23,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.157734592,
+      "rgb_device_timestamp_ms": 1789403357337.7627,
+      "rgb_frame_number": 24,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357337.4565,
+      "depth_frame_number": 24,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.190758432,
+      "rgb_device_timestamp_ms": 1789403357371.3296,
+      "rgb_frame_number": 25,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357371.0237,
+      "depth_frame_number": 25,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.224664928,
+      "rgb_device_timestamp_ms": 1789403357404.8672,
+      "rgb_frame_number": 26,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357404.5615,
+      "depth_frame_number": 26,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.257407456,
+      "rgb_device_timestamp_ms": 1789403357438.3945,
+      "rgb_frame_number": 27,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357438.0889,
+      "depth_frame_number": 27,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.29129328,
+      "rgb_device_timestamp_ms": 1789403357471.9114,
+      "rgb_frame_number": 28,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357471.606,
+      "depth_frame_number": 28,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.3240344,
+      "rgb_device_timestamp_ms": 1789403357505.3962,
+      "rgb_frame_number": 29,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357505.091,
+      "depth_frame_number": 29,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.357992,
+      "rgb_device_timestamp_ms": 1789403357538.8691,
+      "rgb_frame_number": 30,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357538.564,
+      "depth_frame_number": 30,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.390713536,
+      "rgb_device_timestamp_ms": 1789403357572.3298,
+      "rgb_frame_number": 31,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357572.025,
+      "depth_frame_number": 31,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.424287168,
+      "rgb_device_timestamp_ms": 1789403357605.7783,
+      "rgb_frame_number": 32,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357605.4734,
+      "depth_frame_number": 32,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.45753904,
+      "rgb_device_timestamp_ms": 1789403357639.2148,
+      "rgb_frame_number": 33,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357638.91,
+      "depth_frame_number": 33,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.491157856,
+      "rgb_device_timestamp_ms": 1789403357672.639,
+      "rgb_frame_number": 34,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357672.3333,
+      "depth_frame_number": 34,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.525029088,
+      "rgb_device_timestamp_ms": 1789403357706.05,
+      "rgb_frame_number": 35,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357705.7456,
+      "depth_frame_number": 35,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.558843008,
+      "rgb_device_timestamp_ms": 1789403357739.45,
+      "rgb_frame_number": 36,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357739.1455,
+      "depth_frame_number": 36,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.592268352,
+      "rgb_device_timestamp_ms": 1789403357772.8376,
+      "rgb_frame_number": 37,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357772.5334,
+      "depth_frame_number": 37,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.625516736,
+      "rgb_device_timestamp_ms": 1789403357806.2134,
+      "rgb_frame_number": 38,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357805.909,
+      "depth_frame_number": 38,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.658438976,
+      "rgb_device_timestamp_ms": 1789403357839.5767,
+      "rgb_frame_number": 39,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357839.2725,
+      "depth_frame_number": 39,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.692130816,
+      "rgb_device_timestamp_ms": 1789403357872.928,
+      "rgb_frame_number": 40,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357872.624,
+      "depth_frame_number": 40,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.725463488,
+      "rgb_device_timestamp_ms": 1789403357906.267,
+      "rgb_frame_number": 41,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357905.9631,
+      "depth_frame_number": 41,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.75854864,
+      "rgb_device_timestamp_ms": 1789403357939.594,
+      "rgb_frame_number": 42,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357939.2903,
+      "depth_frame_number": 42,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.792288832,
+      "rgb_device_timestamp_ms": 1789403357972.9087,
+      "rgb_frame_number": 43,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403357972.605,
+      "depth_frame_number": 43,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.825269728,
+      "rgb_device_timestamp_ms": 1789403358006.2114,
+      "rgb_frame_number": 44,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403358005.9077,
+      "depth_frame_number": 44,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.85890032,
+      "rgb_device_timestamp_ms": 1789403358039.5017,
+      "rgb_frame_number": 45,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403358039.1982,
+      "depth_frame_number": 45,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.892151072,
+      "rgb_device_timestamp_ms": 1789403358072.78,
+      "rgb_frame_number": 46,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403358072.4768,
+      "depth_frame_number": 46,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.925196512,
+      "rgb_device_timestamp_ms": 1789403358106.0461,
+      "rgb_frame_number": 47,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403358105.743,
+      "depth_frame_number": 47,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.958850656,
+      "rgb_device_timestamp_ms": 1789403358139.299,
+      "rgb_frame_number": 48,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403358138.996,
+      "depth_frame_number": 48,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103301.992244448,
+      "rgb_device_timestamp_ms": 1789403358172.541,
+      "rgb_frame_number": 49,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403358172.2378,
+      "depth_frame_number": 49,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    },
+    {
+      "host_monotonic_s": 103302.02556496,
+      "rgb_device_timestamp_ms": 1789403358205.7705,
+      "rgb_frame_number": 50,
+      "rgb_timestamp_domain": "timestamp_domain.global_time",
+      "depth_device_timestamp_ms": 1789403358205.4675,
+      "depth_frame_number": 50,
+      "depth_timestamp_domain": "timestamp_domain.global_time"
+    }
+  ]
+}

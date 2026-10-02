@@ -1,0 +1,27 @@
+{
+  "dataset_dir": "/tmp/a1z-SYNTHETIC-schema-test-vfp8s572/export",
+  "frames": 16,
+  "video_checks": [
+    {
+      "file": "videos/observation.images.wrist/chunk-000/file-000.mp4",
+      "programs": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 640,
+          "height": 480,
+          "nb_read_frames": "16"
+        }
+      ]
+    }
+  ],
+  "success": true,
+  "validated": true,
+  "error": null,
+  "alignment_report": "alignment-report.json",
+  "parquet_rows": 16,
+  "action_defined": false,
+  "timestamps_file": "frame-timestamps.json",
+  "playback_file": "playback.json",
+  "evidence_boundary": "Synthetic joint fixture paired with copied camera sample, format/readback test only, not a robot demonstration"
+}

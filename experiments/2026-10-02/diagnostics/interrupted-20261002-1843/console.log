@@ -1,0 +1,36 @@
+ppython3 -c "import subprocess,signal;signal.signal(signal.SIG [K[KIINT,lambda *a:None);r=subprocess.call(['/home/dimos/dimos/.venv/bin/python','-u' [K[K,,'/home/dimos/a1z-experiments/2026-10-02/teach.py','--camera']);print('__A1Z_TEA [K[KCCH_FINISHED__',r,flush=True)"[?2004l
+CAMERA_READY：D405 已开始采集；视频编码将在机械臂停用后完成。
+PREFLIGHT_OK {"q_rad": [0.23441672388799795, 1.09159227893492, -0.9451056687266348, 0.024605172808422893, 0.12722209506370596, 0.0497825589379719], "gravity_model_nm": [-2.6554863574221974e-17, -3.4453500108207606, -7.612056877652636, -1.8515080121383747, 0.01461357851502945, 0.000161250269749715], "feedback_counts": [1, 1, 1, 2, 2, 2], "error_codes": [0, 0, 0, 0, 0, 0], "model_nq": 6}
+
+底座须固定，夹爪空载。双手托住臂体，避开关节缝隙。
+本轮为低比例辅助托重，不会悬停。全程托住，只缓慢移动几厘米。
+按回车后立即待录，无倒计时；你开始移动才录，连续静止 2 秒后自动保存。
+待录和单次录制各最多 2 分钟。结束/异常会停用电机，不回零。
+按开始时先让机械臂靠稳垫子；拖动时持续托住，结束前放回支撑。
+按回车开始监听；Ctrl+C 可中止。
+
+ARMED：正在待录。现在可以缓慢拖动几厘米，检测到移动才开始录制。
+待录中，尚未检测到明显移动；最多再等 120 秒。
+RECORDING：已检测到移动，正式录制开始；请持续托住。
+录制中 / 已录 2 帧；停止移动 2 秒即保存。
+录制中 / 已录 50 帧；停止移动 2 秒即保存。
+录制中 / 已录 100 帧；停止移动 2 秒即保存。
+录制中 / 已录 147 帧；停止移动 2 秒即保存。
+录制中 / 已录 197 帧；停止移动 2 秒即保存。
+录制中 / 已录 244 帧；停止移动 2 秒即保存。
+连续静止 2 秒，录制结束，正在保存并停用。
+^CTraceback (most recent call last):
+  File "/home/dimos/a1z-experiments/2026-10-02/teach.py", line 412, in <module>
+    main()
+  File "/home/dimos/a1z-experiments/2026-10-02/teach.py", line 384, in main
+    meta['camera'] = camera.stop(timeout=60)
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dimos/a1z-experiments/2026-10-02/camera_session_control.py", line 107, in stop
+    self.process.wait(timeout=min(60,max(0,timeout)))
+  File "/home/dimos/.local/share/uv/python/cpython-3.12.13-linux-aarch64-gnu/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dimos/.local/share/uv/python/cpython-3.12.13-linux-aarch64-gnu/lib/python3.12/subprocess.py", line 2047, in _wait
+    time.sleep(delay)
+KeyboardInterrupt
+__A1Z_TEACH_FINISHED__ -2

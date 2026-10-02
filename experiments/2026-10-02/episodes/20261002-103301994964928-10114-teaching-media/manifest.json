@@ -1,0 +1,67 @@
+{
+  "fps": 30,
+  "export_error": null,
+  "source": "raw",
+  "remote_dataset": {
+    "dataset_dir": "/home/dimos/a1z-experiments/2026-10-02/datasets/20261002-103293843182336",
+    "depth_video_saved": false,
+    "action_defined": false,
+    "timing_boundary": "host receipt, not calibrated exposure; nominal video grid is 30 fps",
+    "device": "RealSense D405",
+    "depth_scale_m": 9.999999747378752e-05,
+    "rgb_intrinsics": {
+      "width": 640,
+      "height": 480,
+      "ppx": 316.01068115234375,
+      "ppy": 234.85256958007812,
+      "fx": 394.8290710449219,
+      "fy": 394.41204833984375,
+      "coeffs": [
+        -0.054658193141222,
+        0.05967361107468605,
+        0.00022569828433915973,
+        -3.146376911900006e-05,
+        -0.02019789256155491
+      ]
+    },
+    "distortion_model": "distortion.inverse_brown_conrady",
+    "frames": 51,
+    "stop_reason": "requested_stop",
+    "receipt_hz": 30.057420156474862,
+    "max_receipt_gap_s": 0.034113183995941654,
+    "skipped_rgb_frames": 0,
+    "video_checks": [
+      {
+        "file": "videos/observation.images.wrist/chunk-000/file-000.mp4",
+        "returncode": 0,
+        "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"codec_name\": \"h264\",\n            \"width\": 640,\n            \"height\": 480,\n            \"nb_read_frames\": \"51\"\n        }\n    ]\n}\n",
+        "stderr": "",
+        "decoded": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 640,
+              "height": 480,
+              "nb_read_frames": "51"
+            }
+          ]
+        }
+      }
+    ],
+    "success": true,
+    "error": null,
+    "ready": true,
+    "log_file": "/home/dimos/a1z-experiments/2026-10-02/datasets/20261002-103293843182336.camera.log",
+    "returncode": 0
+  },
+  "video": {
+    "bytes": 121683,
+    "sha256": "e3062aced057923e16dd08a0518667541ec9bcd21c847001cfebb323a00beb39"
+  },
+  "timestamps": {
+    "bytes": 18851,
+    "sha256": "f9a0cea63a69aa82a333e7002291085cbbc5935174ec2f91d17cf873a5e3968b"
+  },
+  "complete": true
+}

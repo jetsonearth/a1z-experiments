@@ -1,0 +1,32 @@
+{
+  "samples": 551,
+  "duration_s": 11.187264608000987,
+  "effective_sample_hz": 49.16304559442056,
+  "dt_median_ms": 20.329072001914028,
+  "dt_max_ms": 24.388863996136934,
+  "feedback_age_max_ms": 3.6141760065220296,
+  "max_abs_velocity_rad_s": 0.7428571428571438,
+  "joint_range_deg": [
+    19.71,
+    55.1,
+    45.27,
+    2.6,
+    27.61,
+    0.33
+  ],
+  "max_adjacent_position_change_deg": [
+    0.37,
+    0.7,
+    0.61,
+    0.2,
+    0.76,
+    0.07
+  ],
+  "time_strictly_increasing": true,
+  "finite": true,
+  "motor_status_expected": true,
+  "status": "motion_complete",
+  "stop_send_errors": [],
+  "sha256": "a3e95d821fa23fd2b8c8792c9d6c60c612a6749a714dcde314943d94d6a08ac5",
+  "basic_data_checks_pass": true
+}
