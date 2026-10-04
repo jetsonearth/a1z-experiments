@@ -72,7 +72,7 @@ def main():
     else:print(f'ACT 推理：刚度 {a.stiffness:.0%} 厂家默认，目标速度上限 {a.max_speed} rad/s，超时 {a.timeout:.0f}s。',flush=True)
     print('启动后是厂家重力辅助（和录制一样）。夹爪不会张开：合着就夹紧，开着就不动，读不到位置就放松。机械臂在独立进程里运行。',flush=True)
     mode='【HIL 采集模式：空格=接管/交还，接管数据会录下来】' if a.hil else ('【拖动测试】' if a.no_policy else '【评估模式：不录接管数据，按键=停止】')
-    print('='*60+'\n'+mode+'\n'+'='*60,flush=True)
+    print('='*60+'\n'+mode+('' if a.no_policy else f'\n模型：{Path(a.checkpoint).parent.name}/{Path(a.checkpoint).name}  ({a.checkpoint})')+'\n'+'='*60,flush=True)
     if input(f'{mode} 现场就绪，输入 READY：').strip()!='READY':return
     robot.connect()
     client=None
