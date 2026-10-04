@@ -120,7 +120,7 @@ def main():
             print(f"\nTRIAL {t['n']}: {'成功' if t['success'] else '失败'} · {t['end_reason']} · {t['duration_s']}s   累计 {sum(results)}/{len(results)}",flush=True)
             if t['success']:set_label(t['n'],3,auto=True)
             print('标注这一轮：1=没找到口   2=找到口（进口了，没插到底）   3=插到底'+('（USB 已接通，已自动标 3，可改）' if t['success'] else ''),flush=True)
-        print('已回到重力辅助：拔出插头、带回起点、夹好后按 g 开始下一轮。',flush=True)
+        print('已回到重力辅助：拔出插头、带回起点，空格=开/合夹爪（调整插头），夹好后按 g 开始下一轮。',flush=True)
         trial=None;ins=None
     def discard(n):
         f=session/f'trial-{n:02d}.json';t=json.loads(f.read_text());t['hil_keep']=False;f.write_text(json.dumps(t))
