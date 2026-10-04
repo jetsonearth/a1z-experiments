@@ -186,6 +186,9 @@ def main():
                     if tick-quit_at<2:raise KeyboardInterrupt
                     quit_at=tick;print('再按一次 q 退出（先确认手臂在支撑上）',flush=True)
             if state=='human':
+                if trial['inserted_at'] is None and tick-last_print>=5:
+                    # the phone can charge without enumerating (seen 2026-10-04 trial 8): never wait silently
+                    last_print=tick;print('仍由你控制，USB 未识别到。插好了没自动结束就按 x；插得不对就 x 再按 d 丢弃',flush=True)
                 if usb.connected and trial['inserted_at'] is None:
                     trial['inserted_at']=round(tick-trial['t0'],2);print(f'USB 已插入 @ {trial["inserted_at"]}s',flush=True)
                 if trial['inserted_at'] is not None and tick-trial['t0']-trial['inserted_at']>=a.after_insert:finish('usb_inserted')

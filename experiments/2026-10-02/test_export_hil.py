@@ -42,7 +42,7 @@ def main():
     import export_hil
     with tempfile.TemporaryDirectory() as tmp:
         s=Path(tmp)/'hil-runs'/'S1';make_session(s)
-        class A:fps=30;idle_rad=0.003;idle_max_s=1.5;min_frames=10
+        class A:fps=30;idle_rad=0.003;idle_max_s=1.5;min_frames=10;include_unverified=False
         eps,rep=export_hil.collect([s],A)
         assert rep['trials']==2 and rep['interventions']==4,rep
         assert len(eps)==2,len(eps)  # trial 2 discarded

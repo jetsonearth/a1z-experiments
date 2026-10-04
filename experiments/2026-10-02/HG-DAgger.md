@@ -19,6 +19,7 @@ Reference: Kelly, Sidrane, Driggs-Campbell, Kochenderfer, *HG-DAgger: Interactiv
 
 - **One episode per intervention.** ACT predicts 100-step chunks. A separate episode makes LeRobot pad and mask the chunk at the handback, so no label ever contains the policy's own motion after the handback.
 - **Leading idle frames are trimmed** (`--idle-rad 0.003`, at most 1.5 s). In the paper the takeover is itself an action (turning the wheel). With kinesthetic takeover, the first frames are reaction time and would teach "stay still" in exactly the failure state. Pass `--idle-rad 0` to keep everything.
+- **Only USB-verified corrections are exported** (`--include-unverified` to override). On 2026-10-04 one trial reached full depth, the phone charged, but it never enumerated; the operator waited about 9 s, then pulled the plug out before pressing `x`, and all of that would have become labels.
 - **Discard key `d`** after a trial, for a fumbled correction. The paper keeps every expert label. Raw files are kept either way.
 - **Fine-tune vs. retrain.** The paper only says "train on D". `train_hil.sh` defaults to fine-tuning from the previous novice (20k steps); `MODE=scratch` retrains with the act-v2 recipe (60k steps). Run both once in epoch 1 and compare them on the robot.
 - **Data fidelity.** Labels follow the demonstrations exactly: same 30 Hz alignment (`unified_dataset.alignment_plan`), state = measured joints + measured gripper, action = next aligned joints + commanded gripper, same camera streams (color + depth on), same H.264 encoder settings, same task string.

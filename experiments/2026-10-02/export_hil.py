@@ -90,6 +90,10 @@ def collect(sessions,a):
             report['interventions']+=len(human)
             if not t.get('hil_keep',True):
                 report['skipped'].append({'trial':f'{session.name}/{f.stem}','reason':'operator discarded','interventions':len(human)});continue
+            if not t.get('success') and not a.include_unverified:
+                # no USB enumeration: the correction may be incomplete, and anything after it (waiting, pulling the plug out)
+                # would become labels. Only USB-verified corrections are exported unless asked.
+                report['skipped'].append({'trial':f'{session.name}/{f.stem}','reason':f"no USB signal ({t['end_reason']})",'interventions':len(human)});continue
             if not human:continue
             timing=json.loads(f.with_suffix('.timestamps.json').read_text());video=f.with_suffix('.mp4')
             if timing.get('encoder_error'):raise ValueError(f'{f}: video encoder error {timing["encoder_error"]}')
@@ -120,6 +124,7 @@ def main():
     p.add_argument('--aggregate',type=Path,help='existing dataset D (the BC set or the previous aggregate) to merge with')
     p.add_argument('--aggregate-output',type=Path);p.add_argument('--aggregate-repo-id',default='local/a1z_usb_aggregate')
     p.add_argument('--dry-run',action='store_true',help='label and report only; write nothing')
+    p.add_argument('--include-unverified',action='store_true',help='also export trials that ended without a USB signal')
     a=p.parse_args()
     if a.aggregate and not a.aggregate_output:p.error('--aggregate needs --aggregate-output')
     for d in [a.output,a.aggregate_output]:
