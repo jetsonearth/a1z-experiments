@@ -1,0 +1,4 @@
+{"sdk_revision": "e931ecd0e25ad35df251097ba42921b3d2fa7224", "operator_supported_and_gripper_cleared": true, "robot_start_called": false, "sdk_stop_returned": true, "physical_power_removed": false, "note": "Manufacturer arm and gripper disable commands sent; no per-motor off-state acknowledgment claimed."}
+
+
+RETURN 0

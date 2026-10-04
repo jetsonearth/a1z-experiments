@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "sdk_revision": "e931ecd0e25ad35df251097ba42921b3d2fa7224",
+    "source": "task_kinesthetic_vendor_defaults",
+    "status": "failed",
+    "units": {
+      "q": "rad",
+      "dq": "rad/s",
+      "effort": "Nm"
+    },
+    "experiment_date": "2026-10-02",
+    "task": "fixed USB-C approach/alignment",
+    "gripper_controlled": false,
+    "gravity_comp_factor": 1.0,
+    "action_label_policy": "next sampled joint position, derived offline; not measured motor command",
+    "fault": "RuntimeError(\"{'dataset_dir': '/home/dimos/a1z-experiments/2026-10-02/datasets/20261002-107546443461376', 'ready': False, 'error': 'Camera worker exited before ready (code 2)', 'log_file': '/home/dimos/a1z-experiments/2026-10-02/datasets/20261002-107546443461376.camera.log'}\")",
+    "finalization_complete": true,
+    "camera": {
+      "dataset_dir": "/home/dimos/a1z-experiments/2026-10-02/datasets/20261002-107546443461376",
+      "ready": false,
+      "error": "Camera worker exited before ready (code 2)",
+      "log_file": "/home/dimos/a1z-experiments/2026-10-02/datasets/20261002-107546443461376.camera.log",
+      "success": false,
+      "returncode": 2
+    },
+    "camera_recorded": false,
+    "camera_error": "Camera worker exited before ready (code 2)"
+  },
+  "samples": []
+}

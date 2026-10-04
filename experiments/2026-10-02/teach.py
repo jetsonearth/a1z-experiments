@@ -22,8 +22,10 @@ sys.path.insert(0, str(ROOT))
 
 class FeedbackBus:
     """Track real, correctly formatted feedback separately for each joint."""
-    def __init__(self, bus, clock=time.monotonic, sleeper=time.sleep):
+    def __init__(self, bus, clock=time.monotonic, sleeper=time.sleep, gripper_enabled=False):
         self.bus, self.clock, self.sleeper = bus, clock, sleeper
+        self.gripper_enabled = gripper_enabled
+        self.gripper_last = None
         self.last_send = None
         self.send_gap_s = 0.0003
         self.last = [None] * 6
@@ -52,6 +54,9 @@ class FeedbackBus:
             mid, data = msg.arbitration_id, bytes(msg.data)
             if msg.is_error_frame:
                 raise RuntimeError('CAN error frame')
+            if self.gripper_enabled and mid == 7 and msg.is_rx and not msg.is_extended_id and len(data) == 8 and data[0] & 15 == 7:
+                self.gripper_last = self.clock()
+                return msg  # SDK gripper owns parsing and freshness; arm counters remain six.
             if not msg.is_rx or msg.is_extended_id or mid not in range(1, 7) or len(data) != 8:
                 continue
             if (mid, data) in self.tx:
@@ -120,19 +125,48 @@ class MotionGate:
             self.candidate = None
 
 
-def build_robot():
+def gripper_max_torque():
+    """Vendor get_a1z_robot default is 2.0 Nm; gripper_max_torque.txt beside this file overrides."""
+    path = Path(__file__).resolve().parent / 'gripper_max_torque.txt'
+    value = float(path.read_text().strip()) if path.exists() else 2.0
+    if not 0.5 <= value <= 6.0:
+        raise ValueError(f'gripper_max_torque {value} Nm outside reviewed range [0.5, 6.0]')
+    return value
+
+
+def joint_limit_overrides():
+    """joint_limit_overrides.json beside this file: {"4": [lo, hi]} (1-based, rad). Widening only up to
+    what was physically observed: J4 reached 1.641 rad in gravity-assist teaching on 2026-10-03."""
+    path = Path(__file__).resolve().parent / 'joint_limit_overrides.json'
+    if not path.exists():
+        return {}
+    reviewed = {4: (-1.484, 1.70)}
+    overrides = {int(k): tuple(map(float, v)) for k, v in json.loads(path.read_text()).items()}
+    for joint, (lo, hi) in overrides.items():
+        if joint not in reviewed or lo < reviewed[joint][0] or hi > reviewed[joint][1] or lo >= hi:
+            raise ValueError(f'joint{joint} override {lo, hi} outside reviewed bounds {reviewed.get(joint)}')
+    return overrides
+
+
+def build_robot(with_gripper=False):
     import numpy as np
     from a1z.robots.get_robot import get_a1z_robot
-    robot = get_a1z_robot(can_channel='can1', with_gripper=False,
-                          zero_gravity_mode=True, gravity_comp_factor=0.0,
+    robot = get_a1z_robot(can_channel='can1', with_gripper=with_gripper,
+                          gripper_max_torque=gripper_max_torque(),
+                          zero_gravity_mode=True, gravity_comp_factor=1.0,
                           control_freq_hz=250, min_freq_hz=80,
                           urdf_path=str(ROOT / 'a1z/robot_models/a1z/A1Z_G1Z.urdf'))
-    bus = FeedbackBus(robot._bus)
+    limits = list(robot._joint_limits)
+    for joint, bounds in joint_limit_overrides().items():
+        limits[joint - 1] = bounds
+    robot._joint_limits = limits
+    bus = FeedbackBus(robot._bus, gripper_enabled=with_gripper)
     robot._bus = bus
     for motor in robot._motor_chain._motor_a_list + robot._motor_chain._motor_b_list:
         motor.bus = bus
+    if robot.gripper is not None:
+        robot.gripper._motor.bus = bus
     # Keep the pinned official SDK velocity limits; no recording-specific override.
-    robot._torque_clip = np.array([4., 4., 4., 2., 0.5, 0.5])
     return robot, bus
 
 
@@ -235,12 +269,12 @@ def main():
             'units': {'q': 'rad', 'dq': 'rad/s', 'effort': 'Nm'},
             'gripper_controlled': False, 'camera_recorded': False,
             'model': 'A1Z_G1Z.urdf; wrist camera mass not separately calibrated',
-            'max_gravity_factor': 0.3, 'kp': [0] * 6,
+            'max_gravity_factor': 1.0, 'kp': [0] * 6,
             'can_min_send_gap_s': 0.0003,
             'prepare_seconds': 0, 'stop_after_still_seconds': 2.0, 'wait_for_motion_seconds': 120,
             'recording_trigger': 'measured joint displacement >=0.015 rad for 3 updates; may include passive drift',
             'max_joint_displacement_rad': None, 'velocity_limit_source': 'official_sdk_default',
-            'feedforward_caps_nm': [4, 4, 4, 2, 0.5, 0.5],
+            'feedforward_caps_source': 'official_sdk_default',
             'experiment_date': '2026-10-02',
             'jetson_wall_clock_utc_unverified': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
     status, fault = 'preflight_only', None
@@ -259,13 +293,14 @@ def main():
             print('CAMERA_READY：D405 已开始采集；视频编码将在机械臂停用后完成。', flush=True)
         robot, bus = build_robot()
         meta['max_joint_velocity_rad_s'] = robot._vel_limit.tolist()
+        meta['feedforward_caps_nm'] = robot._torque_clip.tolist()
         meta['preflight'] = preflight(robot, bus)
         robot.stop()
         print('PREFLIGHT_OK ' + json.dumps(meta['preflight']), flush=True)
         if args.preflight:
             return
         print('\n底座须固定，夹爪空载。双手托住臂体，避开关节缝隙。', flush=True)
-        print('本轮为低比例辅助托重，不会悬停。全程托住，只缓慢移动几厘米。', flush=True)
+        print('使用厂家示教配置：完整重力补偿，SDK 默认保护；停止仍会失能。', flush=True)
         print('按回车后立即待录，无倒计时；你开始移动才录，连续静止 2 秒后自动保存。', flush=True)
         print('待录和单次录制各最多 2 分钟。结束/异常会停用电机，不回零。', flush=True)
         print('按开始时先让机械臂靠稳垫子；拖动时持续托住，结束前放回支撑。', flush=True)
@@ -315,15 +350,12 @@ def main():
             q = robot._state.pos
             if not np.all(np.isfinite(q)):
                 raise RuntimeError('Nonfinite joint position')
-            limits = np.asarray(robot._joint_limits)
-            if np.any(q < limits[:, 0] - 0.08) or np.any(q > limits[:, 1] + 0.08):
-                raise RuntimeError('Joint outside first-test range')
             errs = robot._state.error_codes
             if np.any(errs[:3] != 0) or np.any(errs[3:] != 1):
                 raise RuntimeError(f'Unexpected active motor status: {errs}')
             gate.observe(q.tolist(), now)
-            # Ramp in from zero; this is deliberately not full gravity compensation.
-            robot.gravity_comp_factor = 0.3 * min(1.0, max(0.0, (now - start) / 2.0))
+            # Follow the manufacturer teach example, without experiment scaling.
+            robot.gravity_comp_factor = 1.0
 
         def recorded_update():
             try:
@@ -354,7 +386,7 @@ def main():
         robot._motor_chain.send_commands = send_recorded
         robot._read_state = checked_read
         robot._update = recorded_update
-        robot.start(initial_kp=zero, initial_kd=np.array([0.2, 0.2, 0.2, 0.1, 0.1, 0.1]))
+        robot.start()  # Manufacturer zero-gravity teaching defaults
         print('ARMED：正在待录。现在可以缓慢拖动几厘米，检测到移动才开始录制。', flush=True)
         status = 'waiting_for_motion'
         last_notice = None

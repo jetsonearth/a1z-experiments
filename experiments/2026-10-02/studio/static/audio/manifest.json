@@ -1,0 +1,42 @@
+[
+  {
+    "name": "ready",
+    "text": "Ready.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "generation_id": "077ed4fa-93e7-4b5e-a3ae-5ac9b4de5ccc",
+    "duration_s": 1.35
+  },
+  {
+    "name": "recording",
+    "text": "Recording.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "generation_id": "797615e1-6e9a-4888-9c6b-ef6771980dfd",
+    "duration_s": 1.5
+  },
+  {
+    "name": "ended",
+    "text": "Recording stopped.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "generation_id": "7c634546-cf66-49ec-8f3b-8ca8f4bdca21",
+    "duration_s": 1.775
+  },
+  {
+    "name": "opening",
+    "text": "Opening.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "generation_id": "eb238501-0f59-4e17-b77d-2b079291a877",
+    "duration_s": 1.45
+  },
+  {
+    "name": "closing",
+    "text": "Closing.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "generation_id": "63585733-a636-4fde-bcac-7c029c9b17c4",
+    "duration_s": 1.425
+  }
+]

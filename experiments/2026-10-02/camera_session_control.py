@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 class CameraSession:
-    def __init__(self, output, max_seconds=300, worker_path=None):
+    def __init__(self, output, max_seconds=None, worker_path=None):
         self.output = Path(output).resolve()
         self.max_seconds = max_seconds
         self.worker_path = Path(worker_path) if worker_path else Path(__file__).with_name('camera_session.py')
@@ -40,6 +40,11 @@ class CameraSession:
                 self.process.wait(timeout=3)
         self._close_log()
 
+    def command(self):
+        return [sys.executable,str(self.worker_path),'--output',str(self.output),
+                '--stop-file',str(self.stop_file),'--ready-file',str(self.ready_file)] + (
+                ['--max-seconds',str(self.max_seconds)] if self.max_seconds is not None else [])
+
     def prepare(self, timeout=30):
         if self.process is not None:
             return self._metadata(**(self.ready or {}))
@@ -49,9 +54,7 @@ class CameraSession:
         try:
             self.output.parent.mkdir(parents=True,exist_ok=True)
             self._log = self.log_file.open('x')
-            command = [sys.executable,str(self.worker_path),'--output',str(self.output),
-                '--stop-file',str(self.stop_file),'--ready-file',str(self.ready_file),
-                '--max-seconds',str(self.max_seconds)]
+            command = self.command()
             self.process = subprocess.Popen(command,stdout=self._log,stderr=subprocess.STDOUT,
                 preexec_fn=lambda:os.nice(10), start_new_session=True)
             deadline = time.monotonic()+min(30,max(0,timeout))
@@ -59,6 +62,8 @@ class CameraSession:
                 if self.process.poll() is not None:
                     self.error = f'Camera worker exited before ready (code {self.process.returncode})'
                     self._close_log()
+                    detail = self.log_file.read_text(errors='replace').strip().splitlines()
+                    if detail: self.error += ': ' + detail[-1][:500]
                     return self._metadata()
                 if self.ready_file.exists():
                     ready = json.loads(self.ready_file.read_text())

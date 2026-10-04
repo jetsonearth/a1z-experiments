@@ -1,0 +1,18 @@
+{
+  "smoke_only": true,
+  "steps": 1,
+  "frames": 101,
+  "episodes": 1,
+  "parameter_update_verified": true,
+  "checkpoint_reload_inference_verified": true,
+  "elapsed_s": 1.4529612080659717,
+  "first_loss": 83.69666290283203,
+  "last_loss": 83.69666290283203,
+  "physical_eval_completed": false,
+  "source_dataset": "/Users/ZhaobangJetWu/a1z-experiments/experiments/2026-10-02/pipeline/smoke-dataset",
+  "losses": [
+    83.69666290283203
+  ],
+  "complete_checkpoint_processors_reload_verified": true,
+  "evaluation_entry_offline_verified": true
+}

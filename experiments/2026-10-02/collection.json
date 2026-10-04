@@ -1,0 +1,756 @@
+{
+ "episodes": [
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-15909673570816-teaching.json",
+   "frames": 917,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 917,
+    "duration_s": 18.63,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.609,
+    "j4_limit": 1.7,
+    "flags": []
+   },
+   "note": "round 1 (4 Nm, tip grasp); seeded from console log"
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-15939694976128-teaching.json",
+   "frames": 439,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 439,
+    "duration_s": 8.9,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.621,
+    "j4_limit": 1.7,
+    "flags": []
+   },
+   "note": "round 1 (4 Nm, tip grasp); seeded from console log"
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-15954321985472-teaching.json",
+   "frames": 641,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 641,
+    "duration_s": 13.03,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.663,
+    "j4_limit": 1.7,
+    "flags": [
+     "J4 贴近限位"
+    ]
+   },
+   "note": "round 1 (4 Nm, tip grasp); seeded from console log"
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18082023925056-teaching.json",
+   "frames": 373,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 373,
+    "duration_s": 7.55,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.546,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18093269665280-teaching.json",
+   "frames": 279,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 279,
+    "duration_s": 5.66,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.61,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18106157283296-teaching.json",
+   "frames": 367,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 367,
+    "duration_s": 7.45,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.666,
+    "j4_limit": 1.7,
+    "flags": [
+     "J4 贴近限位"
+    ]
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18118712937824-teaching.json",
+   "frames": 288,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 288,
+    "duration_s": 5.85,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.548,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18131102883072-teaching.json",
+   "frames": 403,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 403,
+    "duration_s": 8.2,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.241,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18143269806816-teaching.json",
+   "frames": 293,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 293,
+    "duration_s": 5.92,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.286,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18153423509824-teaching.json",
+   "frames": 405,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 405,
+    "duration_s": 8.18,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.44,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18188356618720-teaching.json",
+   "frames": 415,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 415,
+    "duration_s": 8.43,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.452,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18220282336928-teaching.json",
+   "frames": 347,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 347,
+    "duration_s": 7.05,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.635,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18232398310656-teaching.json",
+   "frames": 333,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 333,
+    "duration_s": 6.72,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.697,
+    "j4_limit": 1.7,
+    "flags": [
+     "J4 贴近限位"
+    ]
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18250333211744-teaching.json",
+   "frames": 298,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 298,
+    "duration_s": 6.02,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.355,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18264326464896-teaching.json",
+   "frames": 315,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 315,
+    "duration_s": 6.35,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.455,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18274637033152-teaching.json",
+   "frames": 381,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 381,
+    "duration_s": 7.72,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.504,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18287700579776-teaching.json",
+   "frames": 315,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 315,
+    "duration_s": 6.36,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.658,
+    "j4_limit": 1.7,
+    "flags": [
+     "J4 贴近限位"
+    ]
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18300841003488-teaching.json",
+   "frames": 231,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 231,
+    "duration_s": 4.67,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.38,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18314987529152-teaching.json",
+   "frames": 250,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 250,
+    "duration_s": 5.04,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.54,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18325050336896-teaching.json",
+   "frames": 248,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 248,
+    "duration_s": 5.0,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.628,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18338086594272-teaching.json",
+   "frames": 240,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 240,
+    "duration_s": 4.85,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.368,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18606045725056-teaching.json",
+   "frames": 381,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 381,
+    "duration_s": 7.74,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.496,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18620003957920-teaching.json",
+   "frames": 382,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 382,
+    "duration_s": 7.77,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.573,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18633132725344-teaching.json",
+   "frames": 406,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 406,
+    "duration_s": 8.22,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.509,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18648748627136-teaching.json",
+   "frames": 339,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 339,
+    "duration_s": 6.9,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.471,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18659681820160-teaching.json",
+   "frames": 327,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 327,
+    "duration_s": 6.66,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.459,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18670331736512-teaching.json",
+   "frames": 356,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 356,
+    "duration_s": 7.22,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.522,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18681460900224-teaching.json",
+   "frames": 380,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 380,
+    "duration_s": 7.67,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.629,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18693131739744-teaching.json",
+   "frames": 315,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 315,
+    "duration_s": 6.4,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.579,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18704096592032-teaching.json",
+   "frames": 314,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 314,
+    "duration_s": 6.35,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.608,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18843944674240-teaching.json",
+   "frames": 299,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 299,
+    "duration_s": 6.08,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.528,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18854979501120-teaching.json",
+   "frames": 263,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 263,
+    "duration_s": 5.34,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.558,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18866243361856-teaching.json",
+   "frames": 296,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 296,
+    "duration_s": 6.01,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.399,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18875525778624-teaching.json",
+   "frames": 276,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 276,
+    "duration_s": 5.6,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.573,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18884347494720-teaching.json",
+   "frames": 256,
+   "usb_inserted": false,
+   "qc": {
+    "frames": 256,
+    "duration_s": 5.2,
+    "usb_inserted": false,
+    "gripper_changes": 0,
+    "j4_max": 1.584,
+    "j4_limit": 1.7,
+    "flags": [
+     "未插入"
+    ]
+   },
+   "excluded": true
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18896562010912-teaching.json",
+   "frames": 235,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 235,
+    "duration_s": 4.75,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.637,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18922164365632-teaching.json",
+   "frames": 288,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 288,
+    "duration_s": 5.82,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.648,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18931418005984-teaching.json",
+   "frames": 321,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 321,
+    "duration_s": 6.5,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.573,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18942009498880-teaching.json",
+   "frames": 256,
+   "usb_inserted": false,
+   "qc": {
+    "frames": 256,
+    "duration_s": 5.18,
+    "usb_inserted": false,
+    "gripper_changes": 0,
+    "j4_max": 1.695,
+    "j4_limit": 1.7,
+    "flags": [
+     "未插入",
+     "J4 贴近限位"
+    ]
+   },
+   "excluded": true
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-18952737729344-teaching.json",
+   "frames": 252,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 252,
+    "duration_s": 5.1,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.655,
+    "j4_limit": 1.7,
+    "flags": [
+     "J4 贴近限位"
+    ]
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-20970574775520-teaching.json",
+   "frames": 252,
+   "qc": {
+    "frames": 252,
+    "duration_s": 5.1,
+    "usb_inserted": false,
+    "gripper_changes": 0,
+    "j4_max": 1.483,
+    "j4_limit": 1.7,
+    "flags": [
+     "未插入"
+    ]
+   },
+   "usb_inserted": false,
+   "excluded": true
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-20998661123648-teaching.json",
+   "frames": 332,
+   "qc": {
+    "frames": 332,
+    "duration_s": 6.73,
+    "usb_inserted": false,
+    "gripper_changes": 0,
+    "j4_max": 1.523,
+    "j4_limit": 1.7,
+    "flags": [
+     "未插入"
+    ]
+   },
+   "usb_inserted": false,
+   "excluded": true
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21024150399680-teaching.json",
+   "frames": 270,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 270,
+    "duration_s": 5.47,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.509,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21050144325216-teaching.json",
+   "frames": 242,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 242,
+    "duration_s": 4.9,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.628,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21067997900800-teaching.json",
+   "frames": 242,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 242,
+    "duration_s": 4.9,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.666,
+    "j4_limit": 1.7,
+    "flags": [
+     "J4 贴近限位"
+    ]
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21147920946208-teaching.json",
+   "frames": 205,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 205,
+    "duration_s": 4.14,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.664,
+    "j4_limit": 1.7,
+    "flags": [
+     "J4 贴近限位"
+    ]
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21160680410624-teaching.json",
+   "frames": 332,
+   "usb_inserted": false,
+   "qc": {
+    "frames": 332,
+    "duration_s": 6.74,
+    "usb_inserted": false,
+    "gripper_changes": 0,
+    "j4_max": 1.284,
+    "j4_limit": 1.7,
+    "flags": [
+     "未插入"
+    ]
+   },
+   "excluded": true,
+   "excluded_reason": "usb_not_inserted (confirmed on Jetson)"
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21173144386432-teaching.json",
+   "frames": 301,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 301,
+    "duration_s": 6.08,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.504,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21191389808736-teaching.json",
+   "frames": 292,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 292,
+    "duration_s": 5.92,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.609,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21206193154016-teaching.json",
+   "frames": 224,
+   "usb_inserted": false,
+   "qc": {
+    "frames": 224,
+    "duration_s": 4.54,
+    "usb_inserted": false,
+    "gripper_changes": 0,
+    "j4_max": 1.649,
+    "j4_limit": 1.7,
+    "flags": [
+     "未插入"
+    ]
+   },
+   "excluded": true,
+   "excluded_reason": "usb_not_inserted (confirmed on Jetson)"
+  },
+  {
+   "path": "/home/dimos/a1z-experiments/2026-10-02/episodes/20261002-21220872642944-teaching.json",
+   "frames": 226,
+   "usb_inserted": true,
+   "qc": {
+    "frames": 226,
+    "duration_s": 4.57,
+    "usb_inserted": true,
+    "gripper_changes": 0,
+    "j4_max": 1.517,
+    "j4_limit": 1.7,
+    "flags": []
+   }
+  }
+ ]
+}

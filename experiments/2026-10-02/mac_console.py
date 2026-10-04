@@ -18,6 +18,9 @@ END = b'__A1Z_TEACH_FINISHED__'
 COMMAND = '''python3 -c "import subprocess,signal;signal.signal(signal.SIGINT,lambda *a:None);r=subprocess.call(['/home/dimos/dimos/.venv/bin/python','-u','/home/dimos/a1z-experiments/2026-10-02/teach.py']);print('__A1Z_TEACH_FINISHED__',r,flush=True)"\r'''
 
 
+from serial_session import idle_shell_prompt, ensure_shell
+
+
 def main():
     if not sys.stdin.isatty():
         raise RuntimeError('Open this program in an interactive Terminal')
@@ -45,21 +48,13 @@ def main():
         tty.setraw(sys.stdin.fileno())
         os.write(sys.stdout.fileno(), '\r\nA1Z 首次短轨迹录制 | 等待启动前检查\r\n'.encode())
         with LOG.open('wb', buffering=0) as log:
-            # Ctrl-L only redraws the shell; never press Enter into an unknown
-            # foreground program (it could be a recorder readiness prompt).
-            os.write(fd, b'\x0c')
-            observed = b''
-            until = time.monotonic() + 3
-            while time.monotonic() < until:
-                if select.select([fd], [], [], .15)[0]:
-                    observed += os.read(fd, 65536)
-                    clean = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', observed.decode(errors='replace')).replace('\x00', '')
-                    if re.search(r'dimos@jetson01[^\n]*%\s*$', clean):
-                        break
-            else:
-                raise RuntimeError('Jetson idle shell not confirmed; no recording command sent')
+            ensure_shell(fd)
             payload = COMMAND.encode()
-            if os.environ.get('A1Z_CAMERA') == '1':
+            if os.environ.get('A1Z_MODE') == 'vendor':
+                payload = payload.replace(b"teach.py']", b"vendor_control.py','--execute']")
+            elif os.environ.get('A1Z_MODE') == 'task':
+                payload = payload.replace(b"teach.py']", b"collect_task.py']")
+            elif os.environ.get('A1Z_CAMERA') == '1':
                 payload = payload.replace(b"teach.py']", b"teach.py','--camera']")
             launched = True
             for offset in range(0, len(payload), 64):

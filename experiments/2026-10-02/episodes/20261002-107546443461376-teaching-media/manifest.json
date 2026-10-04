@@ -1,0 +1,5 @@
+{
+  "fps": 30,
+  "export_error": null,
+  "error": "未找到唯一相机视频；视频仍保留在 Jetson。"
+}

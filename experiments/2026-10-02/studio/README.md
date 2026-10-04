@@ -36,7 +36,7 @@ python3 Robotics/Experiments/a1z-2026-10-02/studio/server.py
 
 ## 后续接入更新
 
-界面改为紧凑控制台：顶部控制与状态、主视频回放、侧边录制列表；关节姿态与曲线默认折叠。独立相机测试录像是另一个折叠入口，不会被当作旧关节示范的视频。当前不需要实时视频或网络连接。
+界面遵循 Nothing 设计规范，录制优先：大号状态（录制中为红色 + Doto 计时）、下一步按钮与 R／空格／X 快捷键；进度（目标默认 30，可改，存 localStorage）+ 分段进度条；电机温度（最热关节 + J1–J6 分段条，85°C 急停线，>3 s 无 TASK_TEMP 显示 STALE）与 ENABLED 时长；侧边「本轮录制」实时列表含每条 QC 标记（TASK_QC）、排除状态（X / `/api/discard` → Jetson `DISCARD`，仅 support 阶段）。本机历史与回看默认折叠。语音提示始终开启。
 
 带 `metadata.camera` 的示范会在控制结束后传输视频。数据集路径限制在本实验远端 datasets 下，唯一 MP4 与 raw-camera-timestamps.json 每次 64 KB 分块传回，最大单文件 128 MB，SHA256 校验后原子发布。原始 teaching.json 不改动；伴随文件置于 `<stem>-media/`。传输失败保留远端文件与已保存关节记录，点击同步可以重试。
 
@@ -51,3 +51,31 @@ python3 Robotics/Experiments/a1z-2026-10-02/studio/server.py
 可选文件为统一视频、frame-timestamps.json、由真实 Parquet 观测导出的 playback.json；meta/info.json 与 alignment-report.json 为辅助检查文件。它们与原始相机视频使用不同本地文件名，避免传输中途混用。观测帧数、六关节值、时间戳及 30 Hz 网格通过检查后，API 可用派生 samples 回放，显示 LeRobot 30 Hz 对齐观测；原始教学 JSON 字节和原始下载均保持不变。导出或传输失败保留原因，并尽可能回看原始相机视频。
 
 无硬件测试：`python3 studio/test_optional_media.py` 与 `python3 studio/test_lifecycle.py`（从实验目录运行）。
+
+## 当前采集流程（厂家默认，2026-10-02）
+
+以上旧的动录静停说明已被本节替代。以仓库 `experiments/2026-10-02/studio/server.py` 启动，硬件权限仍由 `A1Z_STUDIO_HARDWARE=1` 显式启用。
+
+现有 dashboard 通过 `mac_console.py` 的 `A1Z_MODE=task` 调用 `collect_task.py`：
+
+1. 连接、准备采集：不启用电机。
+2. 新出现的「已支撑，启用重力辅助」按钮：现场操作者确认后才发送 READY，进入厂家重力辅助模式。
+3. 手动到任务起点，点击「开始录制」。
+4. 完成任务，点击「结束录制」：只结束关节记录，重力辅助保持启用。
+5. 手动复位并放稳支撑，点击「已支撑，失能并保存」；关闭控制、整理视频、传回数据。
+
+没有动录静停、自动超时失能或浏览器关闭触发失能。没有添加运动速度限制、起点角度门槛或重力缩放。自动 reset 和实机 replay 尚未接入；下方播放按钮仍然仅屏幕回看。
+
+新增 POST `/api/ready`、`/api/begin`、`/api/disable`；各操作检查当前流程状态。旧 `/api/stop` 现在发送录制结束回车，不发送 Ctrl-C。离线测试验证状态顺序、重复点击、录制结束不失能、进程异常不发送额外中断。物理采集仍需操作者完成首次验证。
+
+
+## 2026-10-03 自动准备
+
+运行根目录 `Start Studio.command` 后，控制台自动检查串口、采集程序、控制锁、D405 USB 枚举、可写存储、CAN 状态，再进入现场确认。无需先点连接、再点准备。重复打开启动器复用正在运行的服务，不替换正在采集的进程。
+
+- CAN 只在接口 DOWN 且能独占 controller.lock 时恢复厂家 can1 / 1 Mbps；已 UP 的接口不重置。控制锁繁忙、配置不符、相机缺失时显示具体失败原因。
+- 所有串口 RPC 和采集入口共用 serial_session 的提示符判断及短命令限速。只在看到确切空闲 shell 后初始化 Bash；不向未知前台程序发送回车/中断。
+- 不自动发送 READY；现场确认仍由操作者点击。检查表中的相机“已连接”仅表示 USB 枚举，图像帧和关节反馈在启动环节进一步检查。
+- 电源或 USB-C 未接入时等待最多三分钟。错误后可点“重新准备”。登录鉴权没有绕过，也不保存密码。
+- 当前 Mac 仅枚举 CP2102N USB-UART，未枚举 Jetson USB 网卡；Jetson 以太网无 carrier、无活动 Wi-Fi。SSH 服务虽 active，但尚无可达链路，不能声称已实现冷启动免登录。需接通受支持的网络后才能配置 SSH 密钥。
+- 离线验证：`A1Z_STUDIO_FETCH_VIDEO=1 python3 -B -m unittest discover -s studio -p 'test_*.py'`。该环境变量仅为视频功能测试，不改变正常启动默认；视频继续保留在 Jetson。
