@@ -37,16 +37,22 @@ def main():
     if input('现场就绪，输入 READY：').strip()!='READY':return
     robot.connect()
     closed=robot.ready_info.get('gripper')=='closed'
-    print('1=插头搭在口旁边的表面上   2=刚进口没推下去   3=完全插到底   空格=夹爪   连按两次 q=退出',flush=True)
+    print('1=插头搭在口旁边的表面上   2=刚进口没推下去   3=完全插到底（USB 接通才记录）   u=撤销上一条   空格=夹爪   连按两次 q=退出',flush=True)
+    print('按键后保持不动 1 秒；下方每秒显示当前高度。',flush=True)
     events=Queue();stop=threading.Event();threading.Thread(target=keys,args=(events,stop),daemon=True).start()
-    samples=[];quit_at=0
+    samples=[];quit_at=0;last_live=0
     try:
         while True:
             robot.heartbeat();robot.poll_events()
             while not events.empty():
                 k=events.get()
                 if k==' ':closed=not closed;robot.command_gripper(closed);print('夹爪','合' if closed else '开',flush=True)
+                elif k.lower()=='u':
+                    if samples:x=samples.pop();path.write_text(json.dumps({'frame':'gripper_finger_rIght_link in base frame, mm','samples':samples},indent=1));print(f"已撤销 {x['label']} z={x['p_mm'][2]:.1f}",flush=True)
+                elif k=='3' and not usb.connected:
+                    print('USB 未接通：没有记录。插到底、看到 USB 接通后再按 3',flush=True)
                 elif k in LABELS:
+                    print(f'采样中（{LABELS[k]}），保持不动 1 秒…',flush=True)
                     ps=[]
                     t_end=time.monotonic()+1.0
                     while time.monotonic()<t_end:
@@ -57,13 +63,17 @@ def main():
                     path.write_text(json.dumps({'frame':'gripper_finger_rIght_link in base frame, mm','samples':samples},indent=1))
                     print(f"记录 {LABELS[k]}: z={ps[:,2].mean():.1f} mm (晃动 {ps[:,2].std():.2f}) USB={'接通' if usb.connected else '未接通'}",flush=True)
                     by={l:np.array([s['p_mm'] for s in samples if s['label']==l]) for l in LABELS.values()}
-                    if len(by['inserted']) and (len(by['surface']) or len(by['mouth'])):
-                        z0=by['inserted'][:,2].mean()
-                        print('  相对插到底：'+'  '.join(f"{l} {by[l][:,2].mean()-z0:+.1f} mm" for l in ('surface','mouth') if len(by[l])),flush=True)
+                    if len(by['surface']):
+                        zs=by['surface'][:,2].mean()
+                        print('  相对表面：'+'  '.join(f"{l} {by[l][:,2].mean()-zs:+.1f} mm（{len(by[l])} 条）" for l in ('mouth','inserted') if len(by[l])),flush=True)
                 elif k.lower()=='q':
                     if time.monotonic()-quit_at<2:raise KeyboardInterrupt
                     quit_at=time.monotonic();print('再按一次 q 退出（先确认手臂在支撑上）',flush=True)
             if not robot.is_connected:raise RuntimeError('机械臂进程已退出')
+            if time.monotonic()-last_live>=1.0:
+                last_live=time.monotonic();q,_=robot.measured();z=kin.fk(q)[2,3]*1000
+                surf=[x['p_mm'][2] for x in samples if x['label']=='surface']
+                print(f"  当前高度 {z:.1f} mm"+(f"（比表面 {z-np.mean(surf):+.1f}）" if surf else '')+f"  USB {'接通' if usb.connected else '未接通'}",flush=True)
             time.sleep(1/30)
     except KeyboardInterrupt:pass
     finally:
