@@ -43,7 +43,7 @@ def main():
     p.add_argument('--stiffness',type=float,default=1.0);p.add_argument('--max-speed',type=float,default=0.5)
     p.add_argument('--timeout',type=float,default=35);p.add_argument('--after-insert',type=float,default=1.0)
     p.add_argument('--actions-per-chunk',type=int,default=30);p.add_argument('--threshold',type=float,default=0.7)
-    p.add_argument('--no-search',action='store_true',help='policy only: no scripted spiral search / push after the policy stalls')
+    p.add_argument('--search',action='store_true',help='after the policy stalls on the hub, run the scripted spiral search / push (off by default)')
     a=p.parse_args()
     if not a.no_policy and not a.checkpoint:p.error('--checkpoint required unless --no-policy')
     import fcntl
@@ -51,7 +51,7 @@ def main():
     from a1z_robot import A1Z,A1ZConfig
     from usb_watch import UsbWatcher
     from insertion import Inserter,Kin
-    kin=None if a.no_search or a.no_policy else Kin()
+    kin=Kin() if a.search and not a.no_policy else None
     lock=(ROOT/'controller.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     session=ROOT/'eval-runs'/time.strftime('%Y%m%d-%H%M%S');session.mkdir(parents=True)
     usb=UsbWatcher().start()
@@ -71,17 +71,26 @@ def main():
                               chunk_size_threshold=a.threshold,fps=30,aggregate_fn_name='weighted_average')
         client=rc.RobotClient(cfg);client.logger.setLevel(logging.WARNING)
     events=Queue();stop=threading.Event();results=[]
-    state='float';trial=None;ins=None
+    state='float';trial=None;ins=None;labels={};pending=None
     def finish(reason):
-        nonlocal state,trial,ins
+        nonlocal state,trial,ins,pending
         robot.disengage(reason);state='float';robot.stop_video()
         t=trial;t['end_reason']=robot.disengage_reason or reason;t['duration_s']=round(time.monotonic()-t['t0'],2)
         t['success']=t['inserted_at'] is not None;t['log']=list(robot.log);t['stages']=ins.events if ins else []
         (session/f"trial-{t['n']:02d}.json").write_text(json.dumps(t))
         results.append(t['success'])
         print(f"\nTRIAL {t['n']}: {'成功' if t['success'] else '失败'} · {t['end_reason']} · {t['duration_s']}s   累计 {sum(results)}/{len(results)}",flush=True)
+        pending=t['n']
+        if t['success']:set_label(t['n'],3,auto=True)
+        print('标注这一轮：1=没找到口   2=找到口（进口了，没插到底）   3=插到底'+('（USB 已接通，已自动标 3，可改）' if t['success'] else ''),flush=True)
         print('已回到重力辅助：拔出插头、带回起点、夹好后按 g 开始下一轮。',flush=True)
         trial=None;ins=None
+    def set_label(n,label,auto=False):
+        f=session/f'trial-{n:02d}.json';t=json.loads(f.read_text())
+        t['operator_label']={1:'missed',2:'found_port',3:'inserted'}[label];t['operator_label_auto']=auto
+        f.write_text(json.dumps(t));labels[n]=label
+        found=sum(1 for v in labels.values() if v>=2);ins_n=sum(1 for v in labels.values() if v==3)
+        print(f"第 {n} 轮标为「{ {1:'没找到口',2:'找到口',3:'插到底'}[label] }」   累计（已标 {len(labels)} 轮）：找到口 {found}/{len(labels)}   插到底 {ins_n}/{len(labels)}",flush=True)
     try:
         if client is not None:
             if not client.start():raise RuntimeError('连不上 policy server（tmux 里 server 窗口是否在运行？）')
@@ -100,6 +109,8 @@ def main():
             while not events.empty():
                 k=events.get()
                 if state=='run':finish('operator_stop');stopped_at=tick;continue
+                if k in '123' and pending is not None and client is not None:
+                    set_label(pending,int(k));continue
                 if k==' ':
                     if tick-stopped_at<1.0:continue  # a stop key press must not also open the gripper
                     closed=not closed;robot.command_gripper(closed);print('夹爪','合' if closed else '开',flush=True)

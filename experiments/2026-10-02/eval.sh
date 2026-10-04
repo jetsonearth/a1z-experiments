@@ -1,7 +1,7 @@
 #!/bin/bash
 # ACT live evaluation in tmux (survives SSH drops; rerun to reattach).
-#   eval.sh               policy server + client (+ scripted spiral search after the policy stalls)
-#   eval.sh --no-search   policy only
+#   eval.sh               policy server + client; after each trial press 1/2/3 to label the outcome
+#   eval.sh --search      also run the scripted spiral search after the policy stalls (experimental)
 #   eval.sh --no-policy   drag-only check: robot process + client, no model
 #   eval.sh --calib       port height calibration (drag mode, keys 1/2/3)
 CKPT=${CKPT:-/home/dimos/a1z-infer/checkpoints/060000/pretrained_model}

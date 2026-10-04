@@ -51,9 +51,11 @@ def main():
             if name in excl or not t['log']:continue
             P=np.array([kin.fk(e['q'])[:3,3]*1000 for e in t['log']]);i=int(np.argmin(P[:,2]))
             z=P[i,2]-ref['inserted_z'];xy=float(np.hypot(*(P[i,:2]-ref['port_xy'])))
-            localized=P[i,2]<ref['surface_z']-a.margin
-            n+=1;loc+=localized;ins+=bool(t['success'])
-            rows.append(f"  {name}  lowest z {z:+6.1f} mm  xy {xy:5.1f} mm  localized {'Y' if localized else '-'}  inserted {'Y' if t['success'] else '-'}  {t.get('end_reason','')}"
+            lab=t.get('operator_label')  # operator's call wins over the height estimate
+            localized=lab in ('found_port','inserted') if lab else P[i,2]<ref['surface_z']-a.margin
+            inserted=lab=='inserted' if lab else bool(t['success'])
+            n+=1;loc+=localized;ins+=inserted
+            rows.append(f"  {name}  lowest z {z:+6.1f} mm  xy {xy:5.1f} mm  localized {'Y' if localized else '-'}  inserted {'Y' if inserted else '-'}  {t.get('end_reason','')}"+(f"  label {lab}" if lab else '')
                         +(f"  stages {[s['stage'] for s in t.get('stages',[])]}" if t.get('stages') else ''))
         print(f"{sess}: localization {loc}/{n}  insertion {ins}/{n}"+(f"  (excluded {', '.join(excl)})" if excl else ''))
         print('\n'.join(rows))
