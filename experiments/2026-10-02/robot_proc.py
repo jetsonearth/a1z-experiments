@@ -122,8 +122,11 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap):
             if tick-last_rec>=0.02:
                 last_rec=tick
                 with arm._command_lock:kp_now=arm._command.kp.tolist();cpos=arm._command.pos.tolist()
+                # grip = measured opening (NaN without feedback), grip_cmd = commanded opening: the same two values the
+                # demonstrations stored as gripper_position / gripper_target, so intervention data exports identically.
                 flight.write(json.dumps({'t':round(tick,4),'mode':int(mode),'hz':hz,'q':q.round(5).tolist(),'dq':np.round(st['vel'],4).tolist(),
-                    'eff':np.round(st['eff'],3).tolist(),'cmd_pos':np.round(cpos,5).tolist(),'kp':kp_now,'grip':g,'hb_age':round(hb_age,3)})+'\n')
+                    'eff':np.round(st['eff'],3).tolist(),'cmd_pos':np.round(cpos,5).tolist(),'kp':kp_now,'grip':g,
+                    'grip_cmd':float(arm.gripper.get_pos()),'hb_age':round(hb_age,3)})+'\n')
             while not cap.records.empty():
                 lvl,msg=cap.records.get()
                 flight.write(json.dumps({'t':round(tick,4),'sdk':lvl,'msg':msg})+'\n')

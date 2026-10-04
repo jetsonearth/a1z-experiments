@@ -4,6 +4,7 @@
 #   eval.sh --search      also run the scripted spiral search after the policy stalls (experimental)
 #   eval.sh --no-policy   drag-only check: robot process + client, no model
 #   eval.sh --calib       port height calibration (drag mode, keys 1/2/3)
+#   eval.sh --hil --epoch N   HG-DAgger collection with the epoch-N novice (CKPT=...): Space takes over / hands back
 CKPT=${CKPT:-/home/dimos/a1z-infer/checkpoints/060000/pretrained_model}
 EXP='cd $HOME/a1z-experiments/2026-10-02 && $HOME/a1z-infer/run.sh'
 if ! tmux has-session -t eval 2>/dev/null; then

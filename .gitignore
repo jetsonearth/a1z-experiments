@@ -14,6 +14,7 @@ experiments/2026-10-02/pipeline/smoke-run/
 .venv-vast/
 experiments/2026-10-02/eval-runs/
 experiments/2026-10-02/shadow-runs/
+experiments/2026-10-02/hil-runs/
 experiments/2026-10-02/calibration/flight.jsonl
 experiments/2026-10-02/calibration/robot_proc.log
 experiments/2026-10-02/pipeline/cloud-code.tar.gz

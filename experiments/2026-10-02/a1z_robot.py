@@ -7,6 +7,7 @@ arm through shared memory. Safety logic (rate limit, target-gap check, heartbeat
 process. The gripper is operator-owned: the policy's gripper output is logged, never applied.
 """
 from dataclasses import dataclass
+import json
 from pathlib import Path
 import multiprocessing as mp
 import queue
@@ -43,7 +44,7 @@ class A1Z(Robot):
         self.config=config
         self._proc=None;self._pipe=None
         self._frame=None;self._frame_t=0.0;self._frame_lock=threading.Lock();self._cam_stop=threading.Event()
-        self._video=None;self._video_lock=threading.Lock()
+        self._video=None;self._video_lock=threading.Lock();self._video_path=None;self._video_frames=[]
         self.disengage_reason=None;self.log=[];self.events=[]
 
     @property
@@ -70,20 +71,30 @@ class A1Z(Robot):
             except RuntimeError:continue
             color=frames.get_color_frame()
             if not color:continue
+            host=time.monotonic()  # host receipt time, the same clock and point as the demo camera recorder
             image=np.asanyarray(color.get_data()).copy()
-            with self._frame_lock:self._frame=image;self._frame_t=time.monotonic()
+            with self._frame_lock:self._frame=image;self._frame_t=host
             with self._video_lock:
                 if self._video is not None:
-                    import cv2
-                    self._video.write(cv2.cvtColor(image,cv2.COLOR_RGB2BGR))
+                    self._video.write(image.tobytes());self._video_frames.append({'host_monotonic_s':host,'rgb_frame_number':color.get_frame_number()})
 
     def start_video(self,path):
-        import cv2
-        with self._video_lock:self._video=cv2.VideoWriter(str(path),cv2.VideoWriter_fourcc(*'mp4v'),self.config.fps,(self.config.width,self.config.height))
+        """Per-trial wrist video with the demo recorder's encoder (H.264 ultrafast/zerolatency, crf 23) and a
+        per-frame timestamp file, so trial frames can be aligned and exported exactly like demonstrations."""
+        from camera_session import StreamingVideo
+        with self._video_lock:
+            self._video=StreamingVideo(path,self.config.width,self.config.height,self.config.fps)
+            self._video_path=Path(path);self._video_frames=[]
 
     def stop_video(self):
         with self._video_lock:
-            if self._video is not None:self._video.release();self._video=None
+            if self._video is None:return
+            video,path,frames=self._video,self._video_path,self._video_frames;self._video=None
+        error=None
+        try:video.close()
+        except Exception as e:error=repr(e)
+        path.with_suffix('.timestamps.json').write_text(json.dumps({'video':path.name,'encoder':'libx264 ultrafast zerolatency crf23 (camera_session.StreamingVideo)',
+                                                                  'timing_boundary':'host receipt, not calibrated exposure','encoder_error':error,'frames':frames}))
 
     def frame_age(self):
         with self._frame_lock:return time.monotonic()-self._frame_t if self._frame is not None else float('inf')
