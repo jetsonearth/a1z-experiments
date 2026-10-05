@@ -21,6 +21,7 @@ from lerobot.robots.robot import Robot
 import robot_proc
 
 JOINTS=[f'j{i}' for i in range(1,7)]
+LIVE_JPEG='/dev/shm/a1z_live.jpg'  # read by console/server.py
 
 
 @RobotConfig.register_subclass('a1z')
@@ -47,7 +48,7 @@ class A1Z(Robot):
         self._proc=None;self._pipe=None
         self._frame=None;self._frame_t=0.0;self._frame_lock=threading.Lock();self._cam_stop=threading.Event()
         self._video=None;self._video_lock=threading.Lock();self._video_path=None;self._video_frames=[]
-        self.disengage_reason=None;self.log=[];self.events=[]
+        self.disengage_reason=None;self.log=[];self.events=[];self._live_t=0.0
 
     @property
     def observation_features(self):
@@ -76,9 +77,19 @@ class A1Z(Robot):
             host=time.monotonic()  # host receipt time, the same clock and point as the demo camera recorder
             image=np.asanyarray(color.get_data()).copy()
             with self._frame_lock:self._frame=image;self._frame_t=host
+            if host-self._live_t>=0.2:self._live_t=host;self._write_live(image)
             with self._video_lock:
                 if self._video is not None:
                     self._video.write(image.tobytes());self._video_frames.append({'host_monotonic_s':host,'rgb_frame_number':color.get_frame_number()})
+
+    def _write_live(self,image):
+        """Latest wrist frame for the console's live view (~5 Hz JPEG in /dev/shm; never blocks the camera loop on errors)."""
+        try:
+            import cv2,os
+            ok,buf=cv2.imencode('.jpg',image[:,:,::-1],[cv2.IMWRITE_JPEG_QUALITY,70])
+            if ok:
+                tmp=LIVE_JPEG+'.tmp';open(tmp,'wb').write(buf.tobytes());os.replace(tmp,LIVE_JPEG)
+        except Exception:pass
 
     def start_video(self,path):
         """Per-trial wrist video with the demo recorder's encoder (H.264 ultrafast/zerolatency, crf 23) and a

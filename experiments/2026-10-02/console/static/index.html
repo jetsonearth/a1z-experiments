@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="a1z-token" content="__TOKEN__">
+<title>A1Z Console</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">A1Z</span><span class="brand-sub">Console</span></div>
+    <nav>
+      <a href="#/overview" data-page="overview"><span class="ic">◧</span>概览</a>
+      <a href="#/run" data-page="run"><span class="ic">▶</span>运行台</a>
+      <div class="nav-group">结果</div>
+      <a href="#/runs" data-page="runs"><span class="ic">☰</span>运行记录</a>
+      <a href="#/report" data-page="report"><span class="ic">▤</span>评估报告</a>
+      <div class="nav-group">资产</div>
+      <a href="#/models" data-page="models"><span class="ic">◆</span>模型</a>
+      <a href="#/data" data-page="data"><span class="ic">▦</span>数据</a>
+      <div class="nav-group">系统</div>
+      <a href="#/health" data-page="health"><span class="ic">♨</span>硬件状态</a>
+    </nav>
+    <div class="side-foot">
+      <div class="side-status"><span id="side-dot" class="dot"></span><span id="side-state">—</span></div>
+      <div class="side-grip" id="side-grip">夹爪 —</div>
+    </div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="toast" class="toast"></div>
+<div id="modal" class="modal hidden"><div class="modal-card"><button class="modal-x" onclick="closeModal()">×</button><div id="modal-body"></div></div></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

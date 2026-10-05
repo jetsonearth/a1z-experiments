@@ -188,7 +188,7 @@ def main():
                     state='run';ins=Inserter(kin) if kin else None;now=time.monotonic()
                     trial={'n':n,'t0':now,'start_wall':time.time(),'inserted_at':None,'checkpoint':a.checkpoint,'hil':a.hil,'epoch':a.epoch,
                            'segments':[{'controller':'policy','t0':now,'t1':None}],'clock':'time.monotonic(), shared with flight.jsonl and trial-NN.timestamps.json',
-                           'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'actions_per_chunk':a.actions_per_chunk,
+                           'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'ki_version':'v2' if a.ki>0 else None,'actions_per_chunk':a.actions_per_chunk,
                            'threshold':a.threshold,'usb_signal':usb.describe()}
                     print('▶ 模型开始'+('（空格=接管，其他键=结束）' if a.hil else '（任意键停止）'),flush=True)
                 elif k.lower()=='q':

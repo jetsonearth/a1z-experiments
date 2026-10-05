@@ -29,4 +29,5 @@ fi
 if ! tmux list-windows -t eval -F '#W' 2>/dev/null | grep -qx client; then
   echo "client 窗口没有起来；policy server 日志最后几行："; tail -5 /tmp/policy_server.log; tmux kill-session -t eval 2>/dev/null; exit 1
 fi
+[ -n "$A1Z_NO_ATTACH" ] && exit 0  # started by the web console: it drives the tmux window itself
 exec tmux attach -t eval:client
