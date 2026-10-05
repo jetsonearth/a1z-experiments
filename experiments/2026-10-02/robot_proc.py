@@ -39,13 +39,17 @@ class _Capture(logging.Handler):
         if record.levelno>=logging.WARNING:self.records.put((record.levelname,msg[:200]))
 
 
-def integral_step(offset,cmd,q,ki,dt,max_rad):
-    """Outer integral loop on joint position (off when ki=0). The vendor loop is PD + gravity comp only, so static
-    friction leaves a steady error of ~friction/kp (1-2 deg at default kp, measured 2026-10-05). The offset grows
-    while the measured joint lags its command and is clamped to +-max_rad, so the extra torque is bounded by
-    kp*max_rad (also in contact, where it supplies the pressing force). Reset to zero on every engage/float."""
+def integral_step(offset,cmd,q,dq,ki,dt,max_rad,still=0.05,gate_rad=0.09,leak_s=0.5):
+    """Outer integral loop on joint position (off when ki=0), aimed at static friction only. The vendor loop is PD +
+    gravity comp; static friction leaves a steady error of ~friction/kp (1-2 deg at default kp, measured 2026-10-05).
+    A joint integrates only while it is stuck (|dq| < still rad/s) with a moderate error (< gate_rad); while it moves
+    the offset leaks to zero (time constant leak_s), so it cannot wind up during fast motion and cause overshoot
+    (seen 2026-10-05 with a plain integral under the policy: +-3.8 deg swings on J2). Clamped to +-max_rad, so the
+    extra torque is bounded by kp*max_rad (in contact this is the pressing force). Reset on every engage/float."""
     import numpy as np
-    return np.clip(offset+ki*(cmd-q)*dt,-max_rad,max_rad)
+    err=cmd-q;stuck=(np.abs(dq)<still)&(np.abs(err)<gate_rad)
+    out=np.where(stuck,offset+ki*err*dt,offset*max(0.0,1-dt/leak_s))
+    return np.clip(out,-max_rad,max_rad)
 
 
 def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max_deg=3.0):
@@ -122,7 +126,7 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
                     else:
                         dt=min(tick-last,0.05)
                         cmd=cmd+np.clip(target-cmd,-max_speed*dt,max_speed*dt)
-                        if ki>0:i_off=integral_step(i_off,cmd,q,ki,dt,i_max)
+                        if ki>0:i_off=integral_step(i_off,cmd,q,np.asarray(st['vel'],dtype=float),ki,dt,i_max)
                         arm.command_joint_state({'pos':cmd+i_off,'vel':np.zeros(6),'kp':kp_on,'kd':kd_on})
             elif hb_age>5.0:event('fatal','客户端失联超过 5 秒');break
             if limits and tick-last_limit_warn>1.0:
