@@ -60,6 +60,7 @@ def main():
     ins=types.ModuleType('insertion')
     class Kin:
         def fk(self,q):T=np.eye(4);T[:3,3]=np.asarray(q[:3])/10;return T  # metres
+        def step_towards(self,q,p,R,iters=3,damping=1e-3):q=np.asarray(q,float).copy();q[:3]=np.asarray(p)*10;return q
     ins.Kin=Kin;sys.modules['insertion']=ins
     usb=FakeUsb();robots={}
     def make(cfg):
@@ -73,10 +74,10 @@ def main():
     script=[(0.3,'t'),                                   # refused: USB not connected
             (0.5,lambda:drag(TAUGHT,0.3)),(0.9,'usb1'),(1.1,'t'),(2.9,'t'),
             (1.3,'usb0'),(1.4,lambda:drag(TAUGHT+[0,0,0.05,0,0,0],0.2)),(1.8,'g'),   # A1 from ~5 mm above
-            (5.5,'1'),                                   # relabel run 1 by hand
-            (5.8,lambda:drag(START,0.2)),(6.2,'r'),(6.3,lambda:drag(TAUGHT,1.0)),(7.4,'usb1'),
-            (8.3,'usb0'),(8.4,lambda:drag(START+0.02,0.2)),(8.8,'p'),
-            (16.0,'q'),(16.1,'q')]
+            (7.5,'1'),                                   # relabel run 1 by hand
+            (7.8,lambda:drag(START,0.2)),(8.2,'r'),(8.3,lambda:drag(TAUGHT,1.0)),(9.4,'usb1'),
+            (10.3,'usb0'),(10.4,lambda:drag(START+0.02,0.2)),(10.8,'p'),
+            (18.0,'q'),(18.1,'q')]
     def fake_keys(events,stop):
         t0=time.monotonic()
         for at,k in script:
@@ -88,7 +89,7 @@ def main():
     control_test.keys=fake_keys
     with tempfile.TemporaryDirectory() as tmp:
         control_test.ROOT=Path(tmp);control_test.RUNS=Path(tmp)/'control-runs'
-        sys.argv=['control_test.py','--approach-rate','0.5','--hold','3','--replay-speed','1','--after-insert','0.3']
+        sys.argv=['control_test.py','--approach-rate','0.5','--hold','3','--replay-speed','1','--after-insert','0.3','--settle','0.5','--descend-speed','20']
         control_test.main()
         sess=next(p for p in control_test.RUNS.iterdir() if p.is_dir())
         taught=json.loads((control_test.RUNS/'taught.json').read_text())
@@ -96,6 +97,8 @@ def main():
         r1=json.loads((sess/'run-01.json').read_text());r2=json.loads((sess/'run-02.json').read_text())
         assert r1['kind']=='A1 示教点' and r1['success'] and r1['end_reason']=='usb_inserted',(r1['kind'],r1['end_reason'])
         assert r1['operator_label']=='missed' and not r1['operator_label_auto'],r1['operator_label']
+        assert max(abs(x) for x in r1['hover_dxyz_mm'][:2])<0.5 and abs(r1['hover_dxyz_mm'][2]-15)<0.5,r1['hover_dxyz_mm']
+        zs=[e['policy'][2] for e in r1['log']];assert min(zs)>=TAUGHT[2]-1e-9  # never commanded below the taught pose
         assert abs(r1['start_offset_mm'][2]-5.0)<0.5 and max(abs(x) for x in r1['end_dxyz_mm'])<0.5,(r1['start_offset_mm'],r1['end_dxyz_mm'])
         demo=json.loads(next(sess.glob('demo-*.json')).read_text())
         assert demo['usb_at'] is not None and demo['samples'][-1]['t']>=demo['usb_at']+0.45,demo['usb_at']

@@ -2,8 +2,10 @@
 """Control-layer test, no model: given the right answer, can the arm put the plug in?
 
 A1 teach-and-return: insert the plug by hand (USB enumerates), press t to store that joint pose. Pull the plug
-  out and hold the arm about 2 cm above the port, press g: the arm engages and moves back to the stored pose
-  (smooth joint interpolation), then holds it. Tests control accuracy and pressing force at one point.
+  out and hold the arm about 2 cm above the port, press g: the arm engages, moves to --pre-mm straight above the
+  stored pose, holds --settle s and reports the horizontal error there (free-air accuracy, no contact), then
+  descends vertically (IK every 0.5 mm) to exactly the stored joint angles and holds. Tests free-air accuracy
+  and the final press separately.
 A2 record-and-replay: press r, drag one full insertion yourself; recording stops 0.5 s after USB enumerates
   (or press r again). Pull the plug out, bring the arm near the start, press p: the arm moves to the recorded
   start and replays the motion with its timing. Tests whether a position-only demonstration (no hand force)
@@ -50,6 +52,25 @@ def smooth_plan(q0,q1,rate):
     return [(float(t),(q0+(q1-q0)*(1-np.cos(np.pi*t/T))/2).tolist()) for t in ts]
 
 
+def approach_plan(kin,q_now,q_taught,pre_mm,rate,settle_s,descend_mm_s):
+    """A1: joint move to pre_mm straight above the taught finger pose (same orientation), hold settle_s,
+    then a straight vertical descent (IK every 0.5 mm) ending exactly on the taught joint angles."""
+    import numpy as np
+    T=kin.fk(q_taught);p0=T[:3,3];R=T[:3,:3]
+    def ik(seed,dz_mm):
+        q=kin.step_towards(seed,p0+np.array([0,0,dz_mm/1000]),R,iters=8)
+        err=np.linalg.norm(kin.fk(q)[:3,3]-(p0+np.array([0,0,dz_mm/1000])))*1000
+        if err>0.2:raise ValueError(f'IK did not converge ({err:.2f} mm)')
+        return q
+    q_pre=ik(np.asarray(q_taught,float),pre_mm)
+    plan=smooth_plan(q_now,q_pre,rate);t1=plan[-1][0]+settle_s;plan.append((t1,q_pre.tolist()))
+    steps=max(2,int(round(pre_mm/0.5)));seed=q_pre;dt=pre_mm/descend_mm_s/steps
+    for i in range(1,steps+1):
+        dz=pre_mm*(1-i/steps);seed=np.asarray(q_taught,float) if i==steps else ik(seed,dz)
+        plan.append((t1+i*dt,seed.tolist()))
+    return plan,t1
+
+
 def target_at(plan,t):
     """Plan target at time t (linear between samples; holds the last one)."""
     import bisect
@@ -69,6 +90,9 @@ def main():
     p.add_argument('--hold',type=float,default=6.0,help='seconds to hold the final target before giving up')
     p.add_argument('--max-start-gap',type=float,default=0.25,help='rad: arm must start this close to the taught pose / demo start')
     p.add_argument('--after-insert',type=float,default=1.0)
+    p.add_argument('--pre-mm',type=float,default=15.0,help='A1: hover this far straight above the taught pose before descending')
+    p.add_argument('--settle',type=float,default=2.0,help='A1: seconds to hold the hover pose before measuring and descending')
+    p.add_argument('--descend-speed',type=float,default=5.0,help='A1: vertical descent speed, mm/s')
     a=p.parse_args()
     if not 0<a.replay_speed<=1:p.error('--replay-speed must be in (0,1]')
     import fcntl
@@ -164,12 +188,18 @@ def main():
                     gap=float(np.abs(np.array(taught['q'])-q).max())
                     if gap>a.max_start_gap:print(f'离示教点太远（最大关节差 {np.degrees(gap):.0f}°）：先拖到口上方 2 cm 左右',flush=True);continue
                     above=fk(q)-np.array(taught['p_mm'])
-                    start('A1 示教点',smooth_plan(q,taught['q'],a.approach_rate),taught['q'],{'start_offset_mm':above.round(2).tolist(),'taught':taught})
+                    try:plan,check=approach_plan(kin,q,taught['q'],a.pre_mm,a.approach_rate,a.settle,a.descend_speed)
+                    except ValueError as e:print('算不出口上方的姿态：',e,flush=True);continue
+                    start('A1 示教点',plan,taught['q'],{'start_offset_mm':above.round(2).tolist(),'taught':taught,'check_at':check,
+                          'pre_mm':a.pre_mm,'settle_s':a.settle,'descend_mm_s':a.descend_speed})
                 elif k.lower()=='r':
                     if rec is None:
                         if usb.connected:print('USB 还插着：先拔出再录',flush=True);continue
-                        rec={'t0':tick,'usb_at':None,'samples':[],'start_wall':time.time()};print('● 开始录制：拖着完整插一次，USB 识别后自动停止（r=中止）',flush=True)
-                    else:rec=None;print('录制已中止（未保存）',flush=True)
+                        rec={'t0':tick,'usb_at':None,'samples':[],'start_wall':time.time()};print('● 开始录制：拖着完整插一次，USB 识别后自动停止；没识别就插到底后再按 r 停止保存',flush=True)
+                    elif rec['samples'] and rec['samples'][-1]['t']>=1.0:
+                        demo=rec;rec=None;f=session/f"demo-{time.strftime('%H%M%S')}.json";f.write_text(json.dumps(demo))
+                        print(f"录制停止并保存（{'USB 已确认' if demo['usb_at'] is not None else '未经 USB 确认'}）：{demo['samples'][-1]['t']:.1f}s → {f.name}。拔出插头，拖回起点附近，按 p 回放",flush=True)
+                    else:rec=None;print('录制太短（<1 s），未保存',flush=True)
                 elif k.lower()=='p':
                     if demo is None:print('还没有录好的示范：按 r 录一条',flush=True);continue
                     if not closed:print('夹爪是开的：先按空格夹紧',flush=True);continue
@@ -188,6 +218,9 @@ def main():
                 if not robot.engaged:finish('robot_disengaged')
                 else:
                     robot.send_target(target_at(run['plan'],t),run['kind'])
+                    if run.get('check_at') is not None and 'hover_dxyz_mm' not in run and t>=run['check_at']:
+                        d=fk(q)-np.array(run['ref_p_mm']);run['hover_dxyz_mm']=d.round(2).tolist()
+                        print(f"  【空中对准，口上方 {run['pre_mm']:.0f} mm 停稳后】x {d[0]:+.1f}  y {d[1]:+.1f} mm（水平共 {np.hypot(d[0],d[1]):.1f} mm），高度 {d[2]:+.1f} mm（目标 +{run['pre_mm']:.0f}）。开始竖直下降",flush=True)
                     if usb.connected and run['inserted_at'] is None:run['inserted_at']=round(t,2);print(f'USB 已插入 @ {run["inserted_at"]}s',flush=True)
                     if run['inserted_at'] is not None and t-run['inserted_at']>=a.after_insert:finish('usb_inserted')
                     elif t>run['plan_s']+a.hold:finish('hold_timeout')
