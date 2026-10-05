@@ -39,6 +39,15 @@ class _Capture(logging.Handler):
         if record.levelno>=logging.WARNING:self.records.put((record.levelname,msg[:200]))
 
 
+GRIP_RAMP_S=0.5
+
+
+def grip_ramp(cur,goal,span,dt,ramp_s=GRIP_RAMP_S):
+    """Move the gripper current limit toward goal at span/ramp_s per second (span = full - hold); never overshoots."""
+    step=abs(span)*dt/ramp_s if ramp_s>0 else abs(goal-cur)
+    return goal if abs(goal-cur)<=step else cur+(step if goal>cur else -step)
+
+
 def integral_step(offset,cmd,q,dq,ki,dt,max_rad,still=0.05,gate_rad=0.09,leak_s=0.5):
     """Outer integral loop on joint position (off when ki=0), aimed at static friction only. The vendor loop is PD +
     gravity comp; static friction leaves a steady error of ~friction/kp (1-2 deg at default kp, measured 2026-10-05).
@@ -94,8 +103,14 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
         # drops to grip_hold_nm; heat goes with current squared. Full force only while ENGAGED. None = vendor behaviour.
         from a1z.robots.gripper import MOTOR_PEAK_TORQUE_NM
         i_full=float(arm.gripper._i_des);i_hold=None if grip_hold_nm is None else min(i_full,float(grip_hold_nm)/MOTOR_PEAK_TORQUE_NM)
+        # Raise hold->full as a ramp, not a step: on 2026-10-05 (session 170121) a step at engage made the gripper's
+        # force-position loop oscillate (torque 1.7-3.7 Nm, opening 0.013-0.020, audible hum) in 6 of 20 trials and
+        # twisted the plug in the fingers. Releasing (full->hold) stays a step.
+        grip_goal=[i_hold if i_hold is not None else i_full]
         def grip_level(engaged):
-            if i_hold is not None:arm.gripper._i_des=i_full if engaged else i_hold
+            if i_hold is None:return
+            grip_goal[0]=i_full if engaged else i_hold
+            if not engaged:arm.gripper._i_des=i_hold
         grip_level(False)
         def measured():
             st=arm.get_joint_state()
@@ -136,6 +151,8 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
                 elif c[0]=='gripper':arm.set_gripper_free_drive(False);arm.command_gripper(0.0 if c[1] else 1.0)
                 elif c[0]=='quit':raise SystemExit
             hb_age=tick-link[0] if link[0]>0 else 0.0
+            if i_hold is not None and arm.gripper._i_des!=grip_goal[0]:
+                arm.gripper._i_des=grip_ramp(arm.gripper._i_des,grip_goal[0],i_full-i_hold,min(tick-last,0.05),GRIP_RAMP_S)
             if mode==ENGAGED:
                 tgt_age=time.monotonic()-link[1] if link[1]>0 else None
                 if hb_age>0.5:go_float('client heartbeat lost')
@@ -162,7 +179,7 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
                 # demonstrations stored as gripper_position / gripper_target, so intervention data exports identically.
                 flight.write(json.dumps({'t':round(tick,4),'mode':int(mode),'hz':hz,'q':q.round(5).tolist(),'dq':np.round(st['vel'],4).tolist(),
                     'eff':np.round(st['eff'],3).tolist(),'cmd_pos':np.round(cpos,5).tolist(),'kp':kp_now,'grip':g,
-                    'grip_cmd':float(arm.gripper.get_pos()),'hb_age':round(hb_age,3),'i_off':np.round(i_off,5).tolist(),**thermal(st)})+'\n')
+                    'grip_cmd':float(arm.gripper.get_pos()),'g_i':round(float(arm.gripper._i_des)*MOTOR_PEAK_TORQUE_NM,3),'hb_age':round(hb_age,3),'i_off':np.round(i_off,5).tolist(),**thermal(st)})+'\n')
             while not cap.records.empty():
                 lvl,msg=cap.records.get()
                 flight.write(json.dumps({'t':round(tick,4),'sdk':lvl,'msg':msg})+'\n')
