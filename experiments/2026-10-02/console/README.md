@@ -1,5 +1,7 @@
 # A1Z Console
 
+Design: Nothing design language (Space Grotesk / Space Mono / Doto from Google Fonts, system fallbacks offline; OLED-black dark mode, off-white light mode via prefers-color-scheme). The older serial-based collection studio (`studio/`, `Start Studio.command`) is unchanged.
+
 Web front end for evaluation, HG-DAgger collection and control-layer tests. Runs on the Jetson, opened on the Mac.
 
 **Start:** double-click `A1Z Console.command` in the repo root. It starts `console/server.py` on the Jetson if needed (inference venv, `127.0.0.1:8780` only), opens an SSH tunnel and the browser.

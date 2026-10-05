@@ -5,33 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="a1z-token" content="__TOKEN__">
 <title>A1Z Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><span class="logo">A1Z</span><span class="brand-sub">Console</span></div>
+    <div class="brand"><span class="logo">A1Z</span><span class="brand-sub">Console · USB insert</span></div>
     <nav>
-      <a href="#/overview" data-page="overview"><span class="ic">◧</span>概览</a>
-      <a href="#/run" data-page="run"><span class="ic">▶</span>运行台</a>
-      <div class="nav-group">结果</div>
-      <a href="#/runs" data-page="runs"><span class="ic">☰</span>运行记录</a>
-      <a href="#/report" data-page="report"><span class="ic">▤</span>评估报告</a>
-      <div class="nav-group">资产</div>
-      <a href="#/models" data-page="models"><span class="ic">◆</span>模型</a>
-      <a href="#/data" data-page="data"><span class="ic">▦</span>数据</a>
-      <div class="nav-group">系统</div>
-      <a href="#/health" data-page="health"><span class="ic">♨</span>硬件状态</a>
+      <a href="#/overview" data-page="overview"><span class="idx">01</span><span class="nm">概览</span></a>
+      <a href="#/run" data-page="run"><span class="idx">02</span><span class="nm">运行台</span></a>
+      <div class="nav-group">Results</div>
+      <a href="#/runs" data-page="runs"><span class="idx">03</span><span class="nm">运行记录</span></a>
+      <a href="#/report" data-page="report"><span class="idx">04</span><span class="nm">评估报告</span></a>
+      <div class="nav-group">Assets</div>
+      <a href="#/models" data-page="models"><span class="idx">05</span><span class="nm">模型</span></a>
+      <a href="#/data" data-page="data"><span class="idx">06</span><span class="nm">数据</span></a>
+      <div class="nav-group">System</div>
+      <a href="#/health" data-page="health"><span class="idx">07</span><span class="nm">硬件状态</span></a>
     </nav>
     <div class="side-foot">
       <div class="side-status"><span id="side-dot" class="dot"></span><span id="side-state">—</span></div>
       <div class="side-grip" id="side-grip">夹爪 —</div>
     </div>
   </aside>
-  <main id="main"></main>
+  <main><div id="statusline"></div><div id="main"></div></main>
 </div>
 <div id="toast" class="toast"></div>
-<div id="modal" class="modal hidden"><div class="modal-card"><button class="modal-x" onclick="closeModal()">×</button><div id="modal-body"></div></div></div>
+<div id="modal" class="modal hidden"><div class="modal-card"><button class="modal-x" onclick="closeModal()">[ X ]</button><div id="modal-body"></div></div></div>
 <script src="/static/app.js"></script>
 </body>
 </html>
