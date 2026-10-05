@@ -21,7 +21,7 @@ if ! tmux has-session -t eval 2>/dev/null; then
   elif [ "$1" = "--no-policy" ]; then
     tmux new -d -s eval -n client /bin/bash --noprofile --norc -c "$EXP a1z_client.py $*; echo; read -p '按回车关闭'; tmux kill-session -t eval"
   else
-    tmux new -d -s eval -n server /bin/bash --noprofile --norc -c "$EXP -m lerobot.async_inference.policy_server --host=127.0.0.1 --port=8080 --fps=30 --inference_latency=0.033 --obs_queue_timeout=2 2>&1 | tee /tmp/policy_server.log"
+    tmux new -d -s eval -n server /bin/bash --noprofile --norc -c "$EXP a1z_policy_server.py --host=127.0.0.1 --port=8080 --fps=30 --inference_latency=0.033 --obs_queue_timeout=2 2>&1 | tee /tmp/policy_server.log"
     sleep 6
     tmux new-window -t eval -n client /bin/bash --noprofile --norc -c "$EXP a1z_client.py --checkpoint $CKPT $*; echo; read -p '按回车关闭'; tmux kill-session -t eval"
   fi

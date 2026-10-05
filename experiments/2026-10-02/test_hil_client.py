@@ -47,7 +47,9 @@ class FakeUsb:
 
 
 class FakeClient:
+    instance=None
     def __init__(self,cfg):
+        FakeClient.instance=self;self.action_chunk_size=30
         self.action_queue=Queue();self.action_queue_lock=threading.Lock();self.latest_action=5;self.latest_action_lock=threading.Lock()
         self.must_go=threading.Event();self.logger=types.SimpleNamespace(setLevel=lambda *_:None);self.start_barrier=types.SimpleNamespace(wait=lambda:None)
         self.steps=0
@@ -65,7 +67,7 @@ def main():
     a1z_robot.A1Z=lambda cfg:fake_robot.setdefault('r',FakeRobot(cfg))
     usb=FakeUsb();usb_watch.UsbWatcher=lambda:usb
     rc=types.ModuleType('lerobot.async_inference.robot_client');client={}
-    rc.RobotClient=lambda cfg:client.setdefault('c',FakeClient(cfg))
+    rc.RobotClient=FakeClient
     sys.modules['lerobot.async_inference.robot_client']=rc
     import lerobot.async_inference
     lerobot.async_inference.robot_client=rc
@@ -89,7 +91,7 @@ def main():
         assert t['interventions']==2 and t['success'] and not t['autonomous_success'],t
         assert t['end_reason']=='usb_inserted',t['end_reason']
         assert t['hil_keep'] is False  # d pressed after the trial
-        r=fake_robot['r'];c=client['c']
+        r=fake_robot['r'];c=FakeClient.instance
         assert r.calls[:4]==['video','engage','float:takeover','engage'],r.calls
         assert c.latest_action==2005  # reset at start and at the one handback
         assert not any(x.startswith('grip') for x in r.calls)  # Space never toggled the gripper during the trial

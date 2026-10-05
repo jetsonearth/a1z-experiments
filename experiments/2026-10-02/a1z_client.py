@@ -23,6 +23,7 @@ import logging
 import os
 from pathlib import Path
 from queue import Queue
+from async_policy import TimedClientMixin, Timeline
 import sys
 import threading
 import time
@@ -87,7 +88,10 @@ def main():
         cfg=RobotClientConfig(policy_type='act',pretrained_name_or_path=a.checkpoint,robot=robot.config,
                               actions_per_chunk=a.actions_per_chunk,server_address=a.server,policy_device='cuda',
                               chunk_size_threshold=a.threshold,fps=30,aggregate_fn_name='weighted_average')
-        client=rc.RobotClient(cfg);client.logger.setLevel(logging.WARNING)
+        class A1ZClient(TimedClientMixin, rc.RobotClient):
+            pass
+        client=A1ZClient(cfg);client.logger.setLevel(logging.WARNING)
+        client.async_trace=Timeline(session/'async-timing.jsonl')
     events=Queue();stop=threading.Event();results=[]
     state='float';trial=None;ins=None;labels={};pending=None
     def segment(controller,now):
@@ -97,15 +101,13 @@ def main():
         if controller:segs.append({'controller':controller,'t0':now,'t1':None})
     def reset_policy_stream():
         """Fresh start for the novice: drop queued and in-flight chunks predicted from older observations."""
-        with client.action_queue_lock:client.action_queue=Queue()
-        with client.latest_action_lock:client.latest_action+=1000
-        client.must_go.set()
+        client.reset_stream()
     def policy_time(now):
         """Seconds the policy has been in control this trial (the timeout does not count operator time)."""
         return sum((x['t1'] or now)-x['t0'] for x in trial['segments'] if x['controller']=='policy')
     def finish(reason):
         nonlocal state,trial,ins,pending
-        was=state;robot.disengage(reason);segment(None,time.monotonic());state='float';robot.stop_video()
+        was=state;client.pause_stream(reason);robot.disengage(reason);segment(None,time.monotonic());state='float';robot.stop_video()
         t=trial;t['end_reason']=reason if was=='human' else (robot.disengage_reason or reason)  # 'takeover' is not an end
         t['duration_s']=round(time.monotonic()-t['t0'],2)
         t['success']=t['inserted_at'] is not None;t['log']=list(robot.log);t['stages']=ins.events if ins else []
@@ -126,6 +128,7 @@ def main():
             print('标注这一轮：1=没找到口   2=找到口（进口了，没充上电）   3=充上电'+('（USB 已接通，已自动标 3，可改）' if t['success'] else ''),flush=True)
             print('然后用手把插头插好（能充电即可），按 i 记下参考位置（用来算模型离口差几毫米）',flush=True)
         print('已回到重力辅助：拔出插头、带回起点，空格=开/合夹爪（调整插头），夹好后按 g 开始下一轮。',flush=True)
+        client.async_trace.flush()
         trial=None;ins=None
     def discard(n):
         f=session/f'trial-{n:02d}.json';t=json.loads(f.read_text());t['hil_keep']=False;f.write_text(json.dumps(t))
@@ -155,7 +158,7 @@ def main():
                 k=events.get()
                 if state=='run':
                     if a.hil and k==' ':  # takeover: the operator becomes the gate and holds control until handback
-                        robot.disengage('takeover');segment('human',time.monotonic());state='human';stopped_at=tick
+                        client.pause_stream('takeover');robot.disengage('takeover');segment('human',time.monotonic());state='human';stopped_at=tick
                         print('✋ 你接管了（重力辅助）。拖完或救回来后：空格=交还模型   x=结束这一轮',flush=True)
                     else:finish('operator_stop');stopped_at=tick
                     continue
@@ -190,7 +193,7 @@ def main():
                     trial={'n':n,'t0':now,'start_wall':time.time(),'inserted_at':None,'checkpoint':a.checkpoint,'hil':a.hil,'epoch':a.epoch,
                            'segments':[{'controller':'policy','t0':now,'t1':None}],'clock':'time.monotonic(), shared with flight.jsonl and trial-NN.timestamps.json',
                            'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'ki_version':'v2' if a.ki>0 else None,'actions_per_chunk':a.actions_per_chunk,
-                           'threshold':a.threshold,'usb_signal':usb.describe()}
+                           'threshold':a.threshold,'async_client_version':'timed_stream_v1','usb_signal':usb.describe()}
                     print('▶ 模型开始'+('（空格=接管，其他键=结束）' if a.hil else '（任意键停止）'),flush=True)
                 elif k.lower()=='q':
                     if tick-quit_at<2:raise KeyboardInterrupt
@@ -209,8 +212,10 @@ def main():
                     if ins:
                         q,_=robot.measured();prev=ins.stage
                         stage,target=ins.update(tick-trial['t0'],q,robot.commanded())
+                        if ins.stage!=prev and prev=='policy':client.pause_stream('scripted_search')
                         if ins.stage!=prev:print('阶段 →',{'search':'螺旋搜索（轻压 + 小螺旋）','push':'插头进口，往下推','search_failed':'搜索超时','push_failed':'下推超时'}.get(ins.stage,ins.stage),flush=True)
                     if stage=='policy':
+                        client.observe_queue()
                         if client.actions_available():client.control_loop_action()
                         if client._ready_to_send_observation():client.control_loop_observation(task='')
                     elif target is not None:robot.send_target(target,stage)
@@ -234,7 +239,8 @@ def main():
             try:finish('shutdown')
             except Exception:pass
         usb.stop()
-        if client is not None:client.stop()
+        if client is not None:
+            client.pause_stream('shutdown');client.stop();client.async_trace.flush()
         else:robot.disconnect()
         (session/'events.json').write_text(json.dumps(robot.events,default=str))
         lock.close()
