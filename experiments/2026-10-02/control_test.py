@@ -94,6 +94,8 @@ def main():
     p.add_argument('--pre-mm',type=float,default=15.0,help='A1: hover this far straight above the taught pose before descending')
     p.add_argument('--settle',type=float,default=2.0,help='A1: seconds to hold the hover pose before measuring and descending')
     p.add_argument('--descend-speed',type=float,default=5.0,help='A1: vertical descent speed, mm/s')
+    p.add_argument('--ki',type=float,default=0.0,help='integral gain 1/s on joint position (0 = off, vendor PD only)')
+    p.add_argument('--ki-max',type=float,default=3.0,help='integral offset clamp per joint, deg')
     a=p.parse_args()
     if not 0<a.replay_speed<=1:p.error('--replay-speed must be in (0,1]')
     import fcntl
@@ -108,10 +110,10 @@ def main():
     if usb.connected:print('USB 现在是插着的：开始前请先拔出（成功信号以开始时的状态为基线）',flush=True);return
     taught=json.loads((RUNS/'taught.json').read_text()) if (RUNS/'taught.json').exists() else None
     mode='【控制层测试：没有模型。t=记下插好的姿态  g=走回去(A1)  r=录一条示范  p=回放(A2)】'
-    print('='*60+'\n'+mode+f'\n刚度 {a.stiffness:.0%} 厂家默认，和推理时同一套控制。\n'+'='*60,flush=True)
+    print('='*60+'\n'+mode+f'\n刚度 {a.stiffness:.0%} 厂家默认，'+(f'积分补偿 开（{a.ki}/s，上限 {a.ki_max}°）' if a.ki>0 else '积分补偿 关（和推理时同一套控制）')+'\n'+'='*60,flush=True)
     if taught:print(f"已有示教点（{taught['saved']}）：{np.round(taught['p_mm'],1).tolist()} mm。夹法变了就重新按 t。",flush=True)
     if input(f'{mode} 现场就绪，输入 READY：').strip()!='READY':return
-    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session)))
+    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max))
     robot.connect()
     events=Queue();stop=threading.Event();results=[];labels={}
     state='float';run=None;pending=None;demo=None;rec=None
@@ -146,7 +148,7 @@ def main():
         robot.log=[];n=len(results)+1;robot.start_video(session/f'run-{n:02d}.mp4')
         if not robot.engage():robot.stop_video();print('机械臂未进入控制模式，未开始',flush=True);return
         now=time.monotonic();state='run'
-        run={'n':n,'kind':kind,'t0':now,'start_wall':time.time(),'inserted_at':None,'stiffness':a.stiffness,'max_speed':a.max_speed,
+        run={'n':n,'kind':kind,'t0':now,'start_wall':time.time(),'inserted_at':None,'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,
              'plan_s':plan[-1][0],'hold_s':a.hold,'ref_q':list(ref_q),'ref_p_mm':fk(ref_q).tolist(),'usb_signal':usb.describe(),
              'clock':'time.monotonic(), shared with flight.jsonl',**extra}
         run['plan']=plan

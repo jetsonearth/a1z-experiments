@@ -39,7 +39,16 @@ class _Capture(logging.Handler):
         if record.levelno>=logging.WARNING:self.records.put((record.levelname,msg[:200]))
 
 
-def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap):
+def integral_step(offset,cmd,q,ki,dt,max_rad):
+    """Outer integral loop on joint position (off when ki=0). The vendor loop is PD + gravity comp only, so static
+    friction leaves a steady error of ~friction/kp (1-2 deg at default kp, measured 2026-10-05). The offset grows
+    while the measured joint lags its command and is clamped to +-max_rad, so the extra torque is bounded by
+    kp*max_rad (also in contact, where it supplies the pressing force). Reset to zero on every engage/float."""
+    import numpy as np
+    return np.clip(offset+ki*(cmd-q)*dt,-max_rad,max_rad)
+
+
+def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max_deg=3.0):
     out_dir=Path(out_dir)
     log_file=open(out_dir/'robot_proc.log','a',buffering=1)
     os.dup2(log_file.fileno(),1);os.dup2(log_file.fileno(),2)  # never touch the terminal
@@ -75,17 +84,19 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap):
         kp_off=np.zeros(6);kd_off=np.asarray(info['default_kd'])*0.5  # the SDK's own float gains
         limits=[tuple(l) for l in arm._joint_limits] if arm._joint_limits is not None else None
         mode=FLOAT;cmd=None;last=time.monotonic();last_rec=0;last_flush=time.monotonic();last_limit_warn=0
+        i_off=np.zeros(6);i_max=np.radians(ki_max_deg)
         def measured():
             st=arm.get_joint_state()
             g=arm.gripper.get_feedback_norm() if arm.gripper._motor.last_feedback is not None else float('nan')
             return st,float(g)
         def go_float(reason):
-            nonlocal mode
+            nonlocal mode,i_off
+            i_off=np.zeros(6)
             st,_=measured()
             arm.command_joint_state({'pos':st['pos'],'vel':np.zeros(6),'kp':kp_off,'kd':kd_off})
             if mode==ENGAGED:event('disengaged',reason)
             mode=FLOAT
-        event('ready',{'stiffness':stiffness,'kp':kp_on.tolist(),'limits':limits,'gripper':grip_state})
+        event('ready',{'stiffness':stiffness,'kp':kp_on.tolist(),'limits':limits,'gripper':grip_state,'ki':ki,'ki_max_deg':ki_max_deg})
         while True:
             tick=time.monotonic()
             if not arm.is_running:event('fatal','厂家控制器已停止');break
@@ -95,7 +106,7 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap):
                 except queue.Empty:break
                 if c[0]=='engage':
                     if not np.isfinite(q).all():event('refused','关节读数无效');continue
-                    cmd=q.copy();arm.command_joint_state({'pos':cmd,'vel':np.zeros(6),'kp':kp_on,'kd':kd_on})
+                    cmd=q.copy();i_off=np.zeros(6);arm.command_joint_state({'pos':cmd,'vel':np.zeros(6),'kp':kp_on,'kd':kd_on})
                     mode=ENGAGED;link[1]=0.0;event('engaged')
                 elif c[0]=='float':go_float(c[1])
                 elif c[0]=='gripper':arm.set_gripper_free_drive(False);arm.command_gripper(0.0 if c[1] else 1.0)
@@ -111,7 +122,8 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap):
                     else:
                         dt=min(tick-last,0.05)
                         cmd=cmd+np.clip(target-cmd,-max_speed*dt,max_speed*dt)
-                        arm.command_joint_state({'pos':cmd,'vel':np.zeros(6),'kp':kp_on,'kd':kd_on})
+                        if ki>0:i_off=integral_step(i_off,cmd,q,ki,dt,i_max)
+                        arm.command_joint_state({'pos':cmd+i_off,'vel':np.zeros(6),'kp':kp_on,'kd':kd_on})
             elif hb_age>5.0:event('fatal','客户端失联超过 5 秒');break
             if limits and tick-last_limit_warn>1.0:
                 over=[(i+1,float(np.degrees(v-(lo if v<lo else hi)))) for i,(v,(lo,hi)) in enumerate(zip(q,limits)) if v<lo-0.05 or v>hi+0.05]
@@ -126,7 +138,7 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap):
                 # demonstrations stored as gripper_position / gripper_target, so intervention data exports identically.
                 flight.write(json.dumps({'t':round(tick,4),'mode':int(mode),'hz':hz,'q':q.round(5).tolist(),'dq':np.round(st['vel'],4).tolist(),
                     'eff':np.round(st['eff'],3).tolist(),'cmd_pos':np.round(cpos,5).tolist(),'kp':kp_now,'grip':g,
-                    'grip_cmd':float(arm.gripper.get_pos()),'hb_age':round(hb_age,3)})+'\n')
+                    'grip_cmd':float(arm.gripper.get_pos()),'hb_age':round(hb_age,3),'i_off':np.round(i_off,5).tolist()})+'\n')
             while not cap.records.empty():
                 lvl,msg=cap.records.get()
                 flight.write(json.dumps({'t':round(tick,4),'sdk':lvl,'msg':msg})+'\n')

@@ -29,6 +29,8 @@ class A1ZConfig(RobotConfig):
     stiffness:float=1.0          # fraction of vendor default kp while engaged
     max_joint_speed:float=0.5    # rad/s, cap on how fast the commanded target may move
     max_target_gap:float=0.35    # rad (~20 deg) between policy target and measured pose
+    integral_gain:float=0.0      # 1/s, outer integral on joint position (0 = off, vendor PD only)
+    integral_max_deg:float=3.0   # clamp of the integral offset per joint
     out_dir:str='.'
     width:int=640
     height:int=480
@@ -115,7 +117,8 @@ class A1Z(Robot):
         for i in range(robot_proc.STATE_N):self.state[i]=float('nan')
         self.cmd_q=ctx.Queue();self.evt_q=ctx.Queue()
         self._proc=ctx.Process(target=robot_proc.run,args=(self.link,self.state,self.cmd_q,self.evt_q,self.config.out_dir,
-                               self.config.stiffness,self.config.max_joint_speed,self.config.max_target_gap),daemon=False)
+                               self.config.stiffness,self.config.max_joint_speed,self.config.max_target_gap,
+                               self.config.integral_gain,self.config.integral_max_deg),daemon=False)
         self._proc.start()
         deadline=time.monotonic()+40
         while time.monotonic()<deadline:
