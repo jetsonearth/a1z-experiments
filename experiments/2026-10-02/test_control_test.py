@@ -71,7 +71,7 @@ def main():
         while (w:=min(1,(time.monotonic()-t0)/secs))<1:r.q=q0+(to-q0)*w;time.sleep(0.01)
         r.q=to.copy()
     script=[(0.3,'t'),                                   # refused: USB not connected
-            (0.5,lambda:drag(TAUGHT,0.3)),(0.9,'usb1'),(1.1,'t'),
+            (0.5,lambda:drag(TAUGHT,0.3)),(0.9,'usb1'),(1.1,'t'),(2.9,'t'),
             (1.3,'usb0'),(1.4,lambda:drag(TAUGHT+[0,0,0.05,0,0,0],0.2)),(1.8,'g'),   # A1 from ~5 mm above
             (5.5,'1'),                                   # relabel run 1 by hand
             (5.8,lambda:drag(START,0.2)),(6.2,'r'),(6.3,lambda:drag(TAUGHT,1.0)),(7.4,'usb1'),

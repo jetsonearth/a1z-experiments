@@ -128,7 +128,7 @@ def main():
         print(f'▶ {kind} 开始：{plan[-1][0]:.1f}s 动作 + 最多保持 {a.hold:.0f}s（任意键停止）',flush=True)
     try:
         threading.Thread(target=keys,args=(events,stop),daemon=True).start()
-        gs=robot.ready_info.get('gripper');closed=gs=='closed';quit_at=0;stopped_at=0;last_print=0;dt=1/30
+        gs=robot.ready_info.get('gripper');closed=gs=='closed';quit_at=0;t_at=0;stopped_at=0;last_print=0;dt=1/30
         print({'closed':'夹爪保持合着','open':'夹爪开着'}.get(gs,'夹爪位置未读到：放松不出力，按空格夹紧'),flush=True)
         print('就绪。空格=开/合夹爪   t=示教(插好时)   g=走回示教点   r=录示范   p=回放   w=显示当前位置   连按两次 q=退出',flush=True)
         while True:
@@ -152,8 +152,10 @@ def main():
                     if tick-stopped_at<1.0:continue
                     closed=not closed;robot.command_gripper(closed);print('夹爪','合' if closed else '开',flush=True)
                 elif k.lower()=='t':
-                    if not usb.connected:print('USB 没识别到：先手动插到底（识别到）再按 t',flush=True);continue
-                    taught={'q':q.tolist(),'p_mm':fk(q).tolist(),'saved':time.strftime('%Y-%m-%d %H:%M:%S'),'session':session.name}
+                    if not usb.connected and tick-t_at>2:
+                        t_at=tick;print('USB 没识别到。确定插到底了就 2 秒内再按一次 t 强制记下（会注明未经 USB 确认）',flush=True);continue
+                    t_at=0
+                    taught={'q':q.tolist(),'p_mm':fk(q).tolist(),'saved':time.strftime('%Y-%m-%d %H:%M:%S'),'session':session.name,'usb_verified':bool(usb.connected)}
                     (RUNS/'taught.json').write_text(json.dumps(taught));(session/'taught.json').write_text(json.dumps(taught))
                     print(f"示教点已记下：{np.round(taught['p_mm'],1).tolist()} mm。拔出插头，把手臂拖到口上方约 2 cm，按 g",flush=True)
                 elif k.lower()=='g':
