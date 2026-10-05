@@ -31,7 +31,13 @@ CKPTS=INFER/'checkpoints'
 KINDS={'eval':ROOT/'eval-runs','control':ROOT/'control-runs','hil':ROOT/'hil-runs'}
 LIVE='/dev/shm/a1z_live.jpg'
 PORT=int(os.environ.get('A1Z_CONSOLE_PORT','8780'))
-TOKEN=secrets.token_hex(16)
+def _token():
+    """Per-machine token kept across server restarts, so an open page keeps working after a restart."""
+    f=Path.home()/'.a1z_console_token'
+    if not f.exists():
+        f.write_text(secrets.token_hex(16));f.chmod(0o600)
+    return f.read_text().strip()
+TOKEN=_token()
 TMUX='eval'
 GRIP_WARN_C=80.0;GRIP_BLOCK_C=88.0
 sys.path.insert(0,str(ROOT))
@@ -103,11 +109,14 @@ def send_key(k):
 def start_session(p):
     if tmux_alive():return False,'已有会话在运行（先结束它）'
     mode=p.get('mode','eval')
-    try:stiff=float(p.get('stiffness',1.5));ki=float(p.get('ki',0));kimax=float(p.get('ki_max',3))
+    try:
+        stiff=float(p.get('stiffness',1.5));ki=float(p.get('ki',0));kimax=float(p.get('ki_max',3))
+        hold=p.get('grip_hold');hold=None if hold in (None,'','off') else float(hold)
     except ValueError:return False,'参数格式不对'
+    if hold is not None and not 0.5<=hold<=4:return False,'两轮之间夹持力应在 0.5–4 N·m'
     if not (0.5<=stiff<=3.0 and 0<=ki<=5 and 0<kimax<=6):return False,'参数超出范围（刚度 0.5–3，ki 0–5，上限 ≤6°）'
     env=dict(os.environ,A1Z_NO_ATTACH='1')
-    args=['--stiffness',f'{stiff}','--ki',f'{ki}','--ki-max',f'{kimax}']
+    args=['--stiffness',f'{stiff}','--ki',f'{ki}','--ki-max',f'{kimax}']+(['--grip-hold',f'{hold}'] if hold is not None else [])
     if mode in ('eval','hil'):
         ck=p.get('model','')
         if not re.fullmatch(r'[A-Za-z0-9._-]+',ck) or not (CKPTS/ck/'pretrained_model'/'model.safetensors').exists():return False,'找不到这个模型'

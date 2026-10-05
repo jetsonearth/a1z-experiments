@@ -52,7 +52,7 @@ def integral_step(offset,cmd,q,dq,ki,dt,max_rad,still=0.05,gate_rad=0.09,leak_s=
     return np.clip(out,-max_rad,max_rad)
 
 
-def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max_deg=3.0):
+def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max_deg=3.0,grip_hold_nm=None):
     out_dir=Path(out_dir)
     log_file=open(out_dir/'robot_proc.log','a',buffering=1)
     os.dup2(log_file.fileno(),1);os.dup2(log_file.fileno(),2)  # never touch the terminal
@@ -89,6 +89,14 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
         limits=[tuple(l) for l in arm._joint_limits] if arm._joint_limits is not None else None
         mode=FLOAT;cmd=None;last=time.monotonic();last_rec=0;last_flush=time.monotonic();last_limit_warn=0
         i_off=np.zeros(6);i_max=np.radians(ki_max_deg)
+        # Two-level grip (2026-10-05: the G1Z coil reached 94 C holding the plug at the full limit for ~5 min). The SDK reads
+        # gripper._i_des (current limit as a fraction of peak) on every step, so outside policy control the hold current
+        # drops to grip_hold_nm; heat goes with current squared. Full force only while ENGAGED. None = vendor behaviour.
+        from a1z.robots.gripper import MOTOR_PEAK_TORQUE_NM
+        i_full=float(arm.gripper._i_des);i_hold=None if grip_hold_nm is None else min(i_full,float(grip_hold_nm)/MOTOR_PEAK_TORQUE_NM)
+        def grip_level(engaged):
+            if i_hold is not None:arm.gripper._i_des=i_full if engaged else i_hold
+        grip_level(False)
         def measured():
             st=arm.get_joint_state()
             g=arm.gripper.get_feedback_norm() if arm.gripper._motor.last_feedback is not None else float('nan')
@@ -110,8 +118,9 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
             st,_=measured()
             arm.command_joint_state({'pos':st['pos'],'vel':np.zeros(6),'kp':kp_off,'kd':kd_off})
             if mode==ENGAGED:event('disengaged',reason)
-            mode=FLOAT
-        event('ready',{'stiffness':stiffness,'kp':kp_on.tolist(),'limits':limits,'gripper':grip_state,'ki':ki,'ki_max_deg':ki_max_deg})
+            mode=FLOAT;grip_level(False)
+        event('ready',{'stiffness':stiffness,'kp':kp_on.tolist(),'limits':limits,'gripper':grip_state,'ki':ki,'ki_max_deg':ki_max_deg,
+                       'grip_full_nm':round(i_full*MOTOR_PEAK_TORQUE_NM,2),'grip_hold_nm':grip_hold_nm})
         while True:
             tick=time.monotonic()
             if not arm.is_running:event('fatal','厂家控制器已停止');break
@@ -121,7 +130,7 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
                 except queue.Empty:break
                 if c[0]=='engage':
                     if not np.isfinite(q).all():event('refused','关节读数无效');continue
-                    cmd=q.copy();i_off=np.zeros(6);arm.command_joint_state({'pos':cmd,'vel':np.zeros(6),'kp':kp_on,'kd':kd_on})
+                    cmd=q.copy();i_off=np.zeros(6);grip_level(True);arm.command_joint_state({'pos':cmd,'vel':np.zeros(6),'kp':kp_on,'kd':kd_on})
                     mode=ENGAGED;link[1]=0.0;event('engaged')
                 elif c[0]=='float':go_float(c[1])
                 elif c[0]=='gripper':arm.set_gripper_free_drive(False);arm.command_gripper(0.0 if c[1] else 1.0)

@@ -8,6 +8,7 @@ const S={session:{state:'none'},tele:null,usb:null,models:[],page:'overview',tim
 async function get(p){const r=await fetch(p,{cache:'no-store'});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||r.status);return r.json()}
 async function post(p,body){
   const r=await fetch(p,{method:'POST',headers:{'Content-Type':'application/json','X-A1Z-Token':TOKEN},body:JSON.stringify(body||{})});
+  if(r.status===403){toast('页面已过期，请刷新浏览器',true);return {ok:false}}
   const j=await r.json().catch(()=>({ok:false,message:'无响应'}));if(!j.ok)toast(j.message||'失败',true);return j}
 function toast(msg,bad){const t=$('#statusline');t.textContent=bad?`[ERROR: ${msg}]`:`[${msg}]`;t.className='show'+(bad?' err':'');clearTimeout(t._h);t._h=setTimeout(()=>t.className='',3200)}
 function openModal(html){$('#modal-body').innerHTML=html;$('#modal').classList.remove('hidden')}
@@ -144,11 +145,12 @@ function newSessionForm(){
   <div class="row2"><div class="field"><label>刚度 × kp</label><input id="f-stiff" type="number" step="0.1" value="${pref.stiffness??1.5}"></div>
   <div class="field"><label>积分 ki</label><input id="f-ki" type="number" step="0.5" value="${pref.ki??2}"></div>
   <div class="field"><label>上限 °</label><input id="f-kimax" type="number" step="0.5" value="${pref.ki_max??3}"></div></div>
+  <div class="field"><label>两轮之间夹持力 N·m（降低发热；模型控制时自动恢复满力）</label><input id="f-hold" type="number" step="0.5" value="${pref.grip_hold??1.5}"></div>
   <button class="btn primary big wide" id="f-start">启动会话</button>
   <p class="faint" style="font-size:12px;margin:10px 0 0">启动只加载程序，电机不会动。下一步需要你在现场确认 READY。</p></div>`}
 function bindForm(){$('#f-start').onclick=async()=>{
   const p={mode:pref.mode||'eval',stiffness:$('#f-stiff').value,ki:$('#f-ki').value,ki_max:$('#f-kimax').value};
-  if($('#f-model'))p.model=$('#f-model').value;if($('#f-epoch'))p.epoch=$('#f-epoch').value;
+  if($('#f-model'))p.model=$('#f-model').value;if($('#f-epoch'))p.epoch=$('#f-epoch').value;p.grip_hold=$('#f-hold').value;pref.grip_hold=+p.grip_hold;
   Object.assign(pref,{stiffness:+p.stiffness,ki:+p.ki,ki_max:+p.ki_max,model:p.model||pref.model,epoch:p.epoch||pref.epoch});savePref();
   const r=await post('/api/session/start',p);if(r.ok){toast(r.message);S.session.state='starting';S.ctrlKey='';renderCtrl()}}}
 function updateRunTele(){

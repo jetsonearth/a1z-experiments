@@ -95,6 +95,7 @@ def main():
     p.add_argument('--settle',type=float,default=2.0,help='A1: seconds to hold the hover pose before measuring and descending')
     p.add_argument('--descend-speed',type=float,default=5.0,help='A1: vertical descent speed, mm/s')
     p.add_argument('--ki',type=float,default=0.0,help='integral gain 1/s on joint position (0 = off, vendor PD only)')
+    p.add_argument('--grip-hold',type=float,default=None,help='gripper force (N m) outside policy control; full force only while the arm is engaged (default: full force always)')
     p.add_argument('--ki-max',type=float,default=3.0,help='integral offset clamp per joint, deg')
     a=p.parse_args()
     if not 0<a.replay_speed<=1:p.error('--replay-speed must be in (0,1]')
@@ -113,7 +114,7 @@ def main():
     print('='*60+'\n'+mode+f'\n刚度 {a.stiffness:.0%} 厂家默认，'+(f'积分补偿 开（{a.ki}/s，上限 {a.ki_max}°）' if a.ki>0 else '积分补偿 关（和推理时同一套控制）')+'\n'+'='*60,flush=True)
     if taught:print(f"已有示教点（{taught['saved']}）：{np.round(taught['p_mm'],1).tolist()} mm。夹法变了就重新按 t。",flush=True)
     if input(f'{mode} 现场就绪，输入 READY：').strip()!='READY':return
-    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max))
+    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max,grip_hold_nm=a.grip_hold))
     robot.connect()
     events=Queue();stop=threading.Event();results=[];labels={}
     state='float';run=None;pending=None;demo=None;rec=None
