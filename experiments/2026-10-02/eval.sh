@@ -4,6 +4,7 @@
 #   eval.sh --search      also run the scripted spiral search after the policy stalls (experimental)
 #   eval.sh --no-policy   drag-only check: robot process + client, no model
 #   eval.sh --calib       port height calibration (drag mode, keys 1/2/3)
+#   eval.sh --control [--stiffness S]  control-layer test without a model (A1 teach-and-return, A2 record-and-replay)
 #   eval.sh --hil --epoch N   HG-DAgger collection with the epoch-N novice (CKPT=...): Space takes over / hands back
 CKPT=${CKPT:-/home/dimos/a1z-infer/checkpoints/060000/pretrained_model}
 EXP='cd $HOME/a1z-experiments/2026-10-02 && $HOME/a1z-infer/run.sh'
@@ -14,6 +15,9 @@ fi
 if ! tmux has-session -t eval 2>/dev/null; then
   if [ "$1" = "--calib" ]; then
     tmux new -d -s eval -n client /bin/bash --noprofile --norc -c "$EXP calib.py; echo; read -p '按回车关闭'; tmux kill-session -t eval"
+  elif [ "$1" = "--control" ]; then
+    shift
+    tmux new -d -s eval -n client /bin/bash --noprofile --norc -c "$EXP control_test.py $*; echo; read -p '按回车关闭'; tmux kill-session -t eval"
   elif [ "$1" = "--no-policy" ]; then
     tmux new -d -s eval -n client /bin/bash --noprofile --norc -c "$EXP a1z_client.py $*; echo; read -p '按回车关闭'; tmux kill-session -t eval"
   else
