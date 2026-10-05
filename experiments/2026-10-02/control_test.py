@@ -14,7 +14,8 @@ A2 record-and-replay: press r, drag one full insertion yourself; recording stops
 Same control path as policy inference: robot_proc.py (vendor gravity comp 1.0, stiffness x vendor kp, 0.5 rad/s
 target-rate cap, 20 deg target-gap stop, heartbeat). The gripper is operator-owned as in eval.
 A run ends on USB enumeration (+1 s), --hold seconds after the end of the motion, or any key.
-After each run: 1 = not in the port mouth, 2 = in the mouth but not fully in, 3 = fully in (auto on USB).
+After each run: 1 = not in the port mouth, 2 = in the mouth, no charging, 3 = the phone charges (auto on USB enumeration,
+which needs the data pins, i.e. slightly deeper than charging).
 Files: control-runs/<session>/run-NN.json + .mp4, flight.jsonl; the taught pose persists in control-runs/taught.json.
 """
 import argparse
@@ -132,13 +133,13 @@ def main():
         if d:print(f"  结束时离目标 x/y/z {d[0]:+.1f} / {d[1]:+.1f} / {d[2]:+.1f} mm   最低时高度差 {r['lowest_dz_mm']:+.1f} mm   "
                    f"指令-实际 最大 {max(abs(x) for x in r['end_cmd_minus_q_deg']):.2f}°",flush=True)
         if r['success']:set_label(r['n'],3,auto=True)
-        print('标注：1=没进口   2=进口了没插到底   3=插到底'+('（已自动标 3，可改）' if r['success'] else ''),flush=True)
+        print('标注：1=没进口   2=进口了没充电   3=充上电了'+('（已自动标 3，可改）' if r['success'] else ''),flush=True)
         print('回到重力辅助。拔出插头后：g=再走一次示教点   p=再回放   t=重新示教   r=重录示范',flush=True)
         run=None
     def set_label(n,label,auto=False):
         f=session/f'run-{n:02d}.json';r=json.loads(f.read_text())
-        r['operator_label']={1:'missed',2:'in_mouth',3:'inserted'}[label];r['operator_label_auto']=auto;f.write_text(json.dumps(r));labels[n]=label
-        print(f"第 {n} 次标为「{ {1:'没进口',2:'进口没到底',3:'插到底'}[label] }」   插到底 {sum(v==3 for v in labels.values())}/{len(labels)}",flush=True)
+        r['operator_label']={1:'missed',2:'in_mouth',3:'charging'}[label];r['operator_label_auto']=auto;f.write_text(json.dumps(r));labels[n]=label
+        print(f"第 {n} 次标为「{ {1:'没进口',2:'进口没充电',3:'充上电'}[label] }」   充上电 {sum(v==3 for v in labels.values())}/{len(labels)}",flush=True)
     def start(kind,plan,ref_q,extra):
         nonlocal state,run
         if usb.connected:print('USB 还插着：先拔出',flush=True);return

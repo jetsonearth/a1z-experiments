@@ -2,8 +2,8 @@
 """USB insertion success signal: watch for the target device enumerating on the Jetson.
 
 Event time is kernel enumeration time, which lags physical insertion by a few hundred ms.
-Target: A1Z_USB_TARGET="vvvv" or "vvvv:pppp" (hex, comma-separated), else usb_target.txt beside
-this file. Neither means any device absent from the startup baseline, which requires the plug
+Target: A1Z_USB_TARGET="vvvv", "vvvv:pppp" (hex) or "port:<hub sysfs name>" (any device plugged
+into that hub, e.g. port:1-2.4.2, so swapping the phone or the port needs no change), comma-separated, else usb_target.txt beside this file. Neither means any device absent from the startup baseline, which requires the plug
 to be out of the socket at startup.
 
 Probe: python3 usb_watch.py [seconds]  -> lists devices, then prints insert/remove events.
@@ -48,7 +48,8 @@ class UsbWatcher:
         self.connected=self._match(list_devices(root))
     def _match(self,devices):
         if self.targets:
-            return any(desc.split(' ')[0].startswith(t) for desc in devices.values() for t in self.targets)
+            return any((name.startswith(t[5:]+'.') if t.startswith('port:') else desc.split(' ')[0].startswith(t))
+                       for name,desc in devices.items() for t in self.targets)
         return any(name not in self.baseline for name in devices)
     def describe(self):
         return {'targets':self.targets or None,'mode':'vendor_product' if self.targets else 'new_since_startup',

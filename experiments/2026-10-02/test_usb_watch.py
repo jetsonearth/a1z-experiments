@@ -40,6 +40,12 @@ class UsbWatchTest(unittest.TestCase):
     def test_target_already_present_counts_as_connected(self):
         add(self.root,'1-3.4','05ac')
         self.assertTrue(UsbWatcher(targets=['05ac:'],root=self.root).connected)
+    def test_port_target_matches_any_device_behind_that_hub(self):
+        add(self.root,'1-3','05e3')  # the hub itself is not a target
+        w=UsbWatcher(targets=['port:1-3'],period_s=0.01,root=self.root).start()
+        add(self.root,'1-4.1','05ac');time.sleep(0.05);self.assertFalse(w.connected)
+        add(self.root,'1-3.2','2717','ff08')
+        self.assertTrue(wait_for(lambda:w.connected));w.stop()
 
 
 if __name__=='__main__':unittest.main()

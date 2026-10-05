@@ -104,7 +104,7 @@ def main():
         assert demo['usb_at'] is not None and demo['samples'][-1]['t']>=demo['usb_at']+0.45,demo['usb_at']
         assert np.allclose(demo['samples'][0]['q'],START,atol=1e-6)
         assert r2['kind']=='A2 回放' and r2['success'] and r2['end_reason']=='usb_inserted',(r2['kind'],r2['end_reason'])
-        assert r2['operator_label']=='inserted' and r2['operator_label_auto']
+        assert r2['operator_label']=='charging' and r2['operator_label_auto']
         print('control test OK',robots['r'].calls,r1['end_dxyz_mm'],r2['duration_s'])
 
 if __name__=='__main__':main()
