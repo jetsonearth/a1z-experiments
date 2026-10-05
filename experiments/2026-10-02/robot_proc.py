@@ -93,6 +93,17 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
             st=arm.get_joint_state()
             g=arm.gripper.get_feedback_norm() if arm.gripper._motor.last_feedback is not None else float('nan')
             return st,float(g)
+        def thermal(st):
+            """Motor temperatures (arm joints + gripper) and the gripper's measured torque, to locate audible buzzing / heating."""
+            out={}
+            try:out['temp_mos']=np.round(st['temp_mos'],1).tolist();out['temp_rotor']=np.round(st['temp_rotor'],1).tolist()
+            except Exception:pass
+            fb=arm.gripper._motor.last_feedback
+            if fb is not None:
+                for k_in,k_out in (('torque','g_tau'),('temperature_mos','g_temp_mos'),('temperature_rotor','g_temp_rotor'),('temp_mos','g_temp_mos'),('temp_rotor','g_temp_rotor')):
+                    v=getattr(fb,k_in,None)
+                    if v is not None:out[k_out]=round(float(v),3)
+            return out
         def go_float(reason):
             nonlocal mode,i_off
             i_off=np.zeros(6)
@@ -142,7 +153,7 @@ def run(link,state,cmd_q,evt_q,out_dir,stiffness,max_speed,max_gap,ki=0.0,ki_max
                 # demonstrations stored as gripper_position / gripper_target, so intervention data exports identically.
                 flight.write(json.dumps({'t':round(tick,4),'mode':int(mode),'hz':hz,'q':q.round(5).tolist(),'dq':np.round(st['vel'],4).tolist(),
                     'eff':np.round(st['eff'],3).tolist(),'cmd_pos':np.round(cpos,5).tolist(),'kp':kp_now,'grip':g,
-                    'grip_cmd':float(arm.gripper.get_pos()),'hb_age':round(hb_age,3),'i_off':np.round(i_off,5).tolist()})+'\n')
+                    'grip_cmd':float(arm.gripper.get_pos()),'hb_age':round(hb_age,3),'i_off':np.round(i_off,5).tolist(),**thermal(st)})+'\n')
             while not cap.records.empty():
                 lvl,msg=cap.records.get()
                 flight.write(json.dumps({'t':round(tick,4),'sdk':lvl,'msg':msg})+'\n')

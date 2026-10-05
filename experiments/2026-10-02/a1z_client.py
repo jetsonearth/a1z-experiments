@@ -122,7 +122,8 @@ def main():
         else:
             print(f"\nTRIAL {t['n']}: {'成功' if t['success'] else '失败'} · {t['end_reason']} · {t['duration_s']}s   累计 {sum(results)}/{len(results)}",flush=True)
             if t['success']:set_label(t['n'],3,auto=True)
-            print('标注这一轮：1=没找到口   2=找到口（进口了，没插到底）   3=插到底'+('（USB 已接通，已自动标 3，可改）' if t['success'] else ''),flush=True)
+            print('标注这一轮：1=没找到口   2=找到口（进口了，没充上电）   3=充上电'+('（USB 已接通，已自动标 3，可改）' if t['success'] else ''),flush=True)
+            print('然后用手把插头插好（能充电即可），按 i 记下参考位置（用来算模型离口差几毫米）',flush=True)
         print('已回到重力辅助：拔出插头、带回起点，空格=开/合夹爪（调整插头），夹好后按 g 开始下一轮。',flush=True)
         trial=None;ins=None
     def discard(n):
@@ -167,6 +168,11 @@ def main():
                     continue
                 if a.hil and k.lower()=='d' and pending is not None:
                     discard(pending);continue
+                if k.lower()=='i' and pending is not None and not a.hil:
+                    # localisation reference for this trial: the operator inserts the plug by hand, then presses i
+                    f=session/f'trial-{pending:02d}.json';t=json.loads(f.read_text());q,_=robot.measured()
+                    t['hand_ref_q']=q.tolist();t['hand_ref_usb']=bool(usb.connected);t['hand_ref_wall']=time.time();f.write_text(json.dumps(t))
+                    print(f"第 {pending} 轮的参考位置已记下（USB {'已识别' if usb.connected else '未识别'}）。再按 1/2/3 标注",flush=True);continue
                 if k in '123' and pending is not None and client is not None and not a.hil:
                     set_label(pending,int(k));continue
                 if k==' ':
