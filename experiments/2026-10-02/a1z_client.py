@@ -53,6 +53,8 @@ def main():
     p.add_argument('--search',action='store_true',help='after the policy stalls on the hub, run the scripted spiral search / push (off by default)')
     p.add_argument('--hil',action='store_true',help='HG-DAgger collection: Space takes over / hands back during a trial')
     p.add_argument('--epoch',type=int,help='HG-DAgger epoch i whose novice policy is being rolled out (recorded in each trial)')
+    p.add_argument('--ki',type=float,default=0.0,help='bounded integral loop on joint position, 1/s (0 = off: vendor PD only, as in all runs before 2026-10-05)')
+    p.add_argument('--ki-max',type=float,default=3.0,help='integral offset clamp per joint, deg')
     a=p.parse_args()
     if not a.no_policy and not a.checkpoint:p.error('--checkpoint required unless --no-policy')
     if a.hil and (a.no_policy or a.search):p.error('--hil needs the policy and no scripted search')
@@ -66,10 +68,11 @@ def main():
     lock=(ROOT/'controller.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     session=ROOT/('hil-runs' if a.hil else 'eval-runs')/time.strftime('%Y%m%d-%H%M%S');session.mkdir(parents=True)
     usb=UsbWatcher().start()
-    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session)))
+    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max))
     if a.no_policy:print('拖动测试：只有重力辅助（和录制一样），不加载模型。',flush=True)
     elif a.hil:print(f'HG-DAgger 第 {a.epoch} 轮采集：模型先开，觉得要出问题就按空格接管，你拖着做完或救回来后再按空格交还。刚度 {a.stiffness:.0%}，超时只算模型开的时间 {a.timeout:.0f}s。',flush=True)
     else:print(f'ACT 推理：刚度 {a.stiffness:.0%} 厂家默认，目标速度上限 {a.max_speed} rad/s，超时 {a.timeout:.0f}s。',flush=True)
+    print(f'积分补偿 开（{a.ki}/s，上限 {a.ki_max}°）' if a.ki>0 else '积分补偿 关（厂家 PD）',flush=True)
     print('启动后是厂家重力辅助（和录制一样）。夹爪不会张开：合着就夹紧，开着就不动，读不到位置就放松。机械臂在独立进程里运行。',flush=True)
     mode='【HIL 采集模式：空格=接管/交还，接管数据会录下来】' if a.hil else ('【拖动测试】' if a.no_policy else '【评估模式：不录接管数据，按键=停止】')
     print('='*60+'\n'+mode+('' if a.no_policy else f'\n模型：{Path(a.checkpoint).parent.name}/{Path(a.checkpoint).name}  ({a.checkpoint})')+'\n'+'='*60,flush=True)
@@ -179,7 +182,7 @@ def main():
                     state='run';ins=Inserter(kin) if kin else None;now=time.monotonic()
                     trial={'n':n,'t0':now,'start_wall':time.time(),'inserted_at':None,'checkpoint':a.checkpoint,'hil':a.hil,'epoch':a.epoch,
                            'segments':[{'controller':'policy','t0':now,'t1':None}],'clock':'time.monotonic(), shared with flight.jsonl and trial-NN.timestamps.json',
-                           'stiffness':a.stiffness,'max_speed':a.max_speed,'actions_per_chunk':a.actions_per_chunk,
+                           'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'actions_per_chunk':a.actions_per_chunk,
                            'threshold':a.threshold,'usb_signal':usb.describe()}
                     print('▶ 模型开始'+('（空格=接管，其他键=结束）' if a.hil else '（任意键停止）'),flush=True)
                 elif k.lower()=='q':
