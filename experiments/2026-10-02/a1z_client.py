@@ -45,7 +45,7 @@ def keys(events,stop):
         if saved:termios.tcsetattr(fd,termios.TCSADRAIN,saved)
 
 
-SMOOTH={'accel':3.0,'soft_start_s':1.0,'vel_ff':True}  # --smooth preset (2026-10-05)
+SMOOTH={'accel':3.0,'soft_start_s':1.0,'vel_ff':True}  # default tracking since 2026-10-05 17:50; --no-smooth = legacy
 
 
 def main():
@@ -58,7 +58,7 @@ def main():
     p.add_argument('--hil',action='store_true',help='HG-DAgger collection: Space takes over / hands back during a trial')
     p.add_argument('--epoch',type=int,help='HG-DAgger epoch i whose novice policy is being rolled out (recorded in each trial)')
     p.add_argument('--ki',type=float,default=0.0,help='bounded integral loop on joint position, 1/s (0 = off: vendor PD only, as in all runs before 2026-10-05)')
-    p.add_argument('--smooth',action='store_true',help='smooth tracking: accel-limited target (3 rad/s^2), 1 s soft start, velocity feed-forward')
+    p.add_argument('--no-smooth',dest='smooth',action='store_false',help='legacy tracking (velocity-clipped target, vel=0) instead of the default smooth tracking: accel-limited target (3 rad/s^2), 1 s soft start, velocity feed-forward')
     p.add_argument('--grip-hold',type=float,default=None,help='gripper force (N m) outside policy control; full force only while the arm is engaged (default: full force always)')
     p.add_argument('--ki-max',type=float,default=3.0,help='integral offset clamp per joint, deg')
     a=p.parse_args()

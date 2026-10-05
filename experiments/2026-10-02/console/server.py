@@ -236,7 +236,7 @@ def session_summary(kind,s):
     ki=first.get('ki',0) or 0
     # integral v1 (plain, wound up under the policy) ran until ~11:58 on 2026-10-05; v2 integrates only while stuck
     kiv=first.get('ki_version') or (None if not ki else ('v1' if s.name<'20261005-115800' else 'v2'))
-    return {'kind':kind,'session':s.name,'ki_version':kiv,'model':Path(ck).parent.name if ck else ('控制层测试' if kind=='control' else None),
+    return {'kind':kind,'session':s.name,'ki_version':kiv,'smooth':bool(first.get('smooth')),'model':Path(ck).parent.name if ck else ('控制层测试' if kind=='control' else None),
             'stiffness':first.get('stiffness'),'ki':first.get('ki',0) or 0,'epoch':first.get('epoch'),
             'trials':len(trials),'valid':sum(not x['excluded'] for x in trials),
             'labels':{k:sum(1 for x in trials if not x['excluded'] and x['label']==k) for k in ('missed','found_port','in_mouth','inserted','charging')},
@@ -281,8 +281,8 @@ def report():
     for r in list_runs():
         if r['kind']!='eval':continue
         det=run_detail('eval',r['session'])
-        key=(r['model'],r['stiffness'],r['ki'],r['ki_version'])
-        g=groups.setdefault(key,{'model':r['model'],'stiffness':r['stiffness'],'ki':r['ki'],'ki_version':r['ki_version'],'sessions':[],'trials':[]})
+        key=(r['model'],r['stiffness'],r['ki'],r['ki_version'],r['smooth'])
+        g=groups.setdefault(key,{'model':r['model'],'stiffness':r['stiffness'],'ki':r['ki'],'ki_version':r['ki_version'],'smooth':r['smooth'],'sessions':[],'trials':[]})
         g['sessions'].append(r['session']);g['trials']+= [x for x in det['trials'] if not x['excluded']]
     out=[]
     for g in groups.values():

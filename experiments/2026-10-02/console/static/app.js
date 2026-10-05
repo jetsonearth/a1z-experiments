@@ -221,7 +221,7 @@ function playVideo(kind,s,f){openModal(`<h2>${KIND[kind]} ${fmtSess(s)} · ${esc
 // ---------------- report ----------------
 function reportTable(rows,compact){
   return `<table><tr><th>模型</th>${compact?'':'<th class="num">刚度</th><th class="num">ki</th>'}<th class="num">轮数</th><th>找到口 · 95% CI</th><th>充上电 · 95% CI</th><th>离口 mm · 中位</th></tr>
-  ${rows.map(r=>`<tr><td>${esc(r.model)}${compact?` <span class="faint">刚度 ${r.stiffness}</span>`:''}</td>${compact?'':`<td class="num">${r.stiffness}</td><td class="num">${r.ki?r.ki+(r.ki_version==='v1'?' <span class="chip warn" title="早期版本：运动中会积累，导致晃动">v1</span>':''):'关'}</td>`}<td class="num">${r.n}</td>
+  ${rows.map(r=>`<tr><td>${esc(r.model)}${r.smooth?' <span class="chip" title="平滑跟踪：限加速度、1 秒软启动、速度前馈">平滑</span>':''}${compact?` <span class="faint">刚度 ${r.stiffness}</span>`:''}</td>${compact?'':`<td class="num">${r.stiffness}</td><td class="num">${r.ki?r.ki+(r.ki_version==='v1'?' <span class="chip warn" title="早期版本：运动中会积累，导致晃动">v1</span>':''):'关'}</td>`}<td class="num">${r.n}</td>
   <td><span class="rate">${segs(r.labelled?r.found/r.labelled:0,'',10)}<span class="mono">${pct(r.found,r.labelled)}</span></span><span class="faint mono" style="font-size:11px">${r.found}/${r.labelled} · ${ci(r.found_ci)}</span></td>
   <td><span class="rate">${segs(r.n?r.power/r.n:0,'ok',10)}<span class="mono">${pct(r.power,r.n)}</span></span><span class="faint mono" style="font-size:11px">${r.power}/${r.n} · ${ci(r.power_ci)}</span></td>
   <td class="mono">${r.err_median!=null?`${r.err_median.toFixed(1)} <span class="faint">n=${r.err_n}</span>`:'<span class="faint">—</span>'}</td></tr>`).join('')}</table>`}
