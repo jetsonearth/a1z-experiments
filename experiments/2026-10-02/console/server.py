@@ -280,7 +280,8 @@ def report():
         T=g.pop('trials');n=len(T)
         labelled=[x for x in T if x['label']]
         found=sum(1 for x in labelled if x['label'] in ('found_port','inserted'))
-        power=sum(1 for x in T if x['label']=='inserted' or x['usb'])
+        # operator label wins: USB can also fire when the operator inserts by hand before stopping the trial
+        power=sum(1 for x in T if ((x['label'] in ('inserted','charging')) if x['label'] else x['usb']))
         errs=sorted(x['err_xy'] for x in T if x.get('err_xy') is not None)
         med=errs[len(errs)//2] if errs else None
         out.append({**g,'n':n,'labelled':len(labelled),'found':found,'found_ci':wilson(found,len(labelled)),
