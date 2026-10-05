@@ -45,6 +45,9 @@ def keys(events,stop):
         if saved:termios.tcsetattr(fd,termios.TCSADRAIN,saved)
 
 
+SMOOTH={'accel':3.0,'soft_start_s':1.0,'vel_ff':True}  # --smooth preset (2026-10-05)
+
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--checkpoint');p.add_argument('--server',default='127.0.0.1:8080');p.add_argument('--no-policy',action='store_true')
@@ -55,6 +58,7 @@ def main():
     p.add_argument('--hil',action='store_true',help='HG-DAgger collection: Space takes over / hands back during a trial')
     p.add_argument('--epoch',type=int,help='HG-DAgger epoch i whose novice policy is being rolled out (recorded in each trial)')
     p.add_argument('--ki',type=float,default=0.0,help='bounded integral loop on joint position, 1/s (0 = off: vendor PD only, as in all runs before 2026-10-05)')
+    p.add_argument('--smooth',action='store_true',help='smooth tracking: accel-limited target (3 rad/s^2), 1 s soft start, velocity feed-forward')
     p.add_argument('--grip-hold',type=float,default=None,help='gripper force (N m) outside policy control; full force only while the arm is engaged (default: full force always)')
     p.add_argument('--ki-max',type=float,default=3.0,help='integral offset clamp per joint, deg')
     a=p.parse_args()
@@ -70,7 +74,7 @@ def main():
     lock=(ROOT/'controller.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     session=ROOT/('hil-runs' if a.hil else 'eval-runs')/time.strftime('%Y%m%d-%H%M%S');session.mkdir(parents=True)
     usb=UsbWatcher().start()
-    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max,grip_hold_nm=a.grip_hold))
+    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max,grip_hold_nm=a.grip_hold,smooth=SMOOTH if a.smooth else None))
     if a.no_policy:print('拖动测试：只有重力辅助（和录制一样），不加载模型。',flush=True)
     elif a.hil:print(f'HG-DAgger 第 {a.epoch} 轮采集：模型先开，觉得要出问题就按空格接管，你拖着做完或救回来后再按空格交还。刚度 {a.stiffness:.0%}，超时只算模型开的时间 {a.timeout:.0f}s。',flush=True)
     else:print(f'ACT 推理：刚度 {a.stiffness:.0%} 厂家默认，目标速度上限 {a.max_speed} rad/s，超时 {a.timeout:.0f}s。',flush=True)
@@ -192,7 +196,7 @@ def main():
                     state='run';ins=Inserter(kin) if kin else None;now=time.monotonic()
                     trial={'n':n,'t0':now,'start_wall':time.time(),'inserted_at':None,'checkpoint':a.checkpoint,'hil':a.hil,'epoch':a.epoch,
                            'segments':[{'controller':'policy','t0':now,'t1':None}],'clock':'time.monotonic(), shared with flight.jsonl and trial-NN.timestamps.json',
-                           'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'ki_version':'v2' if a.ki>0 else None,'actions_per_chunk':a.actions_per_chunk,
+                           'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'ki_version':'v2' if a.ki>0 else None,'smooth':SMOOTH if a.smooth else None,'actions_per_chunk':a.actions_per_chunk,
                            'threshold':a.threshold,'async_client_version':'timed_stream_v1','usb_signal':usb.describe()}
                     print('▶ 模型开始'+('（空格=接管，其他键=结束）' if a.hil else '（任意键停止）'),flush=True)
                 elif k.lower()=='q':

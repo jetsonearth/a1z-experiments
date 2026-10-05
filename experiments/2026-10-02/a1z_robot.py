@@ -32,6 +32,7 @@ class A1ZConfig(RobotConfig):
     max_target_gap:float=0.35    # rad (~20 deg) between policy target and measured pose
     integral_gain:float=0.0      # 1/s, outer integral on joint position (0 = off, vendor PD only)
     integral_max_deg:float=3.0   # clamp of the integral offset per joint
+    smooth:dict|None=None        # {'accel','soft_start_s','vel_ff'}; None = legacy velocity-clipped target
     grip_hold_nm:float|None=None # gripper current limit outside policy control (None = configured full force always)
     out_dir:str='.'
     width:int=640
@@ -130,7 +131,7 @@ class A1Z(Robot):
         self.cmd_q=ctx.Queue();self.evt_q=ctx.Queue()
         self._proc=ctx.Process(target=robot_proc.run,args=(self.link,self.state,self.cmd_q,self.evt_q,self.config.out_dir,
                                self.config.stiffness,self.config.max_joint_speed,self.config.max_target_gap,
-                               self.config.integral_gain,self.config.integral_max_deg,self.config.grip_hold_nm),daemon=False)
+                               self.config.integral_gain,self.config.integral_max_deg,self.config.grip_hold_nm,self.config.smooth),daemon=False)
         self._proc.start()
         deadline=time.monotonic()+40
         while time.monotonic()<deadline:
