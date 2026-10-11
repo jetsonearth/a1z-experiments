@@ -19,3 +19,7 @@ experiments/2026-10-02/control-runs/
 experiments/2026-10-02/calibration/flight.jsonl
 experiments/2026-10-02/calibration/robot_proc.log
 experiments/2026-10-02/pipeline/cloud-code.tar.gz
+
+# HIL-SERL (2026-10-09): run outputs live on the Jetson and in ~/a1z-data, not in git
+experiments/2026-10-09-hilserl/runs/
+experiments/2026-10-09-hilserl/cameras.json
