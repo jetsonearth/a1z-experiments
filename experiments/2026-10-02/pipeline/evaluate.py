@@ -61,7 +61,8 @@ def main():
           'status':'not_started','outcome':'unlabeled','control':'manufacturer defaults','fps':30}
     robot=bus=pipe=None;started=False;rows=[];images=[]
     try:
-        pipe=rs.pipeline();cfg=rs.config()
+        from wrist_camera import enable_wrist
+        pipe=rs.pipeline();cfg=rs.config();enable_wrist(rs,cfg)
         cfg.enable_stream(rs.stream.color,640,480,rs.format.rgb8,30)
         cfg.enable_stream(rs.stream.depth,640,480,rs.format.z16,30)
         pipe.start(cfg);started=True;pipe.wait_for_frames(2000)

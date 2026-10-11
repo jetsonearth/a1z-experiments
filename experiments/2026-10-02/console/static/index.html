@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,20 +14,22 @@
   <aside class="sidebar">
     <div class="brand"><span class="logo">A1Z</span><span class="brand-sub">Console · USB insert</span></div>
     <nav>
-      <a href="#/overview" data-page="overview"><span class="idx">01</span><span class="nm">概览</span></a>
-      <a href="#/run" data-page="run"><span class="idx">02</span><span class="nm">运行台</span></a>
+      <!-- Overview hidden 2026-10-05: duplicated by Run / Runs / Report.
+      <a href="#/overview" data-page="overview"><span class="idx">00</span><span class="nm">Overview</span></a> -->
+      <a href="#/run" data-page="run"><span class="idx">01</span><span class="nm">Run</span></a>
       <div class="nav-group">Results</div>
-      <a href="#/runs" data-page="runs"><span class="idx">03</span><span class="nm">运行记录</span></a>
-      <a href="#/report" data-page="report"><span class="idx">04</span><span class="nm">评估报告</span></a>
+      <a href="#/runs" data-page="runs"><span class="idx">02</span><span class="nm">Runs</span></a>
+      <a href="#/report" data-page="report"><span class="idx">03</span><span class="nm">Report</span></a>
       <div class="nav-group">Assets</div>
-      <a href="#/models" data-page="models"><span class="idx">05</span><span class="nm">模型</span></a>
-      <a href="#/data" data-page="data"><span class="idx">06</span><span class="nm">数据</span></a>
+      <a href="#/models" data-page="models"><span class="idx">04</span><span class="nm">Models</span></a>
+      <a href="#/data" data-page="data"><span class="idx">05</span><span class="nm">Data</span></a>
       <div class="nav-group">System</div>
-      <a href="#/health" data-page="health"><span class="idx">07</span><span class="nm">硬件状态</span></a>
+      <a href="#/health" data-page="health"><span class="idx">06</span><span class="nm">Hardware</span></a>
+      <a href="#/cameras" data-page="cameras"><span class="idx">07</span><span class="nm">Cameras</span></a>
     </nav>
     <div class="side-foot">
       <div class="side-status"><span id="side-dot" class="dot"></span><span id="side-state">—</span></div>
-      <div class="side-grip" id="side-grip">夹爪 —</div>
+      <div class="side-grip" id="side-grip">Gripper —</div>
     </div>
   </aside>
   <main><div id="statusline"></div><div id="main"></div></main>

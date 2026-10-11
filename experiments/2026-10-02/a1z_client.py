@@ -51,16 +51,18 @@ SMOOTH={'accel':3.0,'soft_start_s':1.0,'vel_ff':True}  # default tracking since 
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--checkpoint');p.add_argument('--server',default='127.0.0.1:8080');p.add_argument('--no-policy',action='store_true')
-    p.add_argument('--stiffness',type=float,default=1.0);p.add_argument('--max-speed',type=float,default=0.5)
+    p.add_argument('--stiffness',type=float,default=None,help='legacy: kp = stiffness x vendor kp with vendor kd (all runs before 2026-10-09); default: dimos gains 80/80/80/50/20/20, kd 3/3/3/0.7/0.4/0.4');p.add_argument('--kp',type=float,nargs=6,default=None,help='per-joint kp while engaged (overrides --stiffness; default: dimos 80 80 80 50 20 20)')
+    p.add_argument('--kd',type=float,nargs=6,default=None,help='per-joint kd while engaged (default: dimos 3 3 3 0.7 0.4 0.4)')
+    p.add_argument('--max-speed',type=float,default=4.0,help="rad/s target rate; 4 = the SDK's commanded-velocity saturation")
     p.add_argument('--timeout',type=float,default=35);p.add_argument('--after-insert',type=float,default=1.0)
     p.add_argument('--actions-per-chunk',type=int,default=30);p.add_argument('--threshold',type=float,default=0.7)
     p.add_argument('--search',action='store_true',help='after the policy stalls on the hub, run the scripted spiral search / push (off by default)')
     p.add_argument('--hil',action='store_true',help='HG-DAgger collection: Space takes over / hands back during a trial')
     p.add_argument('--epoch',type=int,help='HG-DAgger epoch i whose novice policy is being rolled out (recorded in each trial)')
-    p.add_argument('--ki',type=float,default=0.0,help='bounded integral loop on joint position, 1/s (0 = off: vendor PD only, as in all runs before 2026-10-05)')
+    p.add_argument('--ki',type=float,default=2.0,help='bounded integral loop on joint position, 1/s (0 = off; default 2 since 2026-10-09)')
     p.add_argument('--no-smooth',dest='smooth',action='store_false',help='legacy tracking (velocity-clipped target, vel=0) instead of the default smooth tracking: accel-limited target (3 rad/s^2), 1 s soft start, velocity feed-forward')
-    p.add_argument('--grip-hold',type=float,default=None,help='gripper force (N m) outside policy control; full force only while the arm is engaged (default: full force always)')
-    p.add_argument('--ki-max',type=float,default=3.0,help='integral offset clamp per joint, deg')
+    p.add_argument('--grip-hold',type=float,default=1.5,help='gripper force (N m) outside policy control; full force only while the arm is engaged (default 1.5; full force only while engaged)')
+    p.add_argument('--ki-max',type=float,default=1.0,help='integral offset clamp per joint, deg')
     a=p.parse_args()
     if not a.no_policy and not a.checkpoint:p.error('--checkpoint required unless --no-policy')
     if a.hil and (a.no_policy or a.search):p.error('--hil needs the policy and no scripted search')
@@ -68,17 +70,18 @@ def main():
     import fcntl
     import numpy as np
     from a1z_robot import A1Z,A1ZConfig
+    from robot_proc import gains_label
     from usb_watch import UsbWatcher
     from insertion import Inserter,Kin
     kin=Kin() if a.search and not a.no_policy else None
     lock=(ROOT/'controller.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     session=ROOT/('hil-runs' if a.hil else 'eval-runs')/time.strftime('%Y%m%d-%H%M%S');session.mkdir(parents=True)
     usb=UsbWatcher().start()
-    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max,grip_hold_nm=a.grip_hold,smooth=SMOOTH if a.smooth else None))
+    robot=A1Z(A1ZConfig(stiffness=a.stiffness,kp=a.kp,kd=a.kd,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max,grip_hold_nm=a.grip_hold,smooth=SMOOTH if a.smooth else None))
     if a.no_policy:print('拖动测试：只有重力辅助（和录制一样），不加载模型。',flush=True)
-    elif a.hil:print(f'HG-DAgger 第 {a.epoch} 轮采集：模型先开，觉得要出问题就按空格接管，你拖着做完或救回来后再按空格交还。刚度 {a.stiffness:.0%}，超时只算模型开的时间 {a.timeout:.0f}s。',flush=True)
-    else:print(f'ACT 推理：刚度 {a.stiffness:.0%} 厂家默认，目标速度上限 {a.max_speed} rad/s，超时 {a.timeout:.0f}s。',flush=True)
-    print(f'积分补偿 开（{a.ki}/s，上限 {a.ki_max}°）' if a.ki>0 else '积分补偿 关（厂家 PD）',flush=True)
+    elif a.hil:print(f'HG-DAgger 第 {a.epoch} 轮采集：模型先开，觉得要出问题就按空格接管，你拖着做完或救回来后再按空格交还。{gains_label(a.stiffness,a.kp,a.kd)}，超时只算模型开的时间 {a.timeout:.0f}s。',flush=True)
+    else:print(f'ACT 推理：{gains_label(a.stiffness,a.kp,a.kd)}，目标速度上限 {a.max_speed} rad/s，超时 {a.timeout:.0f}s。',flush=True)
+    print(f'积分补偿 开（{a.ki}/s，上限 {a.ki_max}°）' if a.ki>0 else '积分补偿 关',flush=True)
     print('启动后是厂家重力辅助（和录制一样）。夹爪不会张开：合着就夹紧，开着就不动，读不到位置就放松。机械臂在独立进程里运行。',flush=True)
     mode='【HIL 采集模式：空格=接管/交还，接管数据会录下来】' if a.hil else ('【拖动测试】' if a.no_policy else '【评估模式：不录接管数据，按键=停止】')
     print('='*60+'\n'+mode+('' if a.no_policy else f'\n模型：{Path(a.checkpoint).parent.name}/{Path(a.checkpoint).name}  ({a.checkpoint})')+'\n'+'='*60,flush=True)
@@ -148,12 +151,14 @@ def main():
             if not client.start():raise RuntimeError('连不上 policy server（tmux 里 server 窗口是否在运行？）')
             threading.Thread(target=client.receive_actions,daemon=True).start()
             client.start_barrier.wait()  # we are the control-loop party
+            client.start_observation_sender()
         threading.Thread(target=keys,args=(events,stop),daemon=True).start()
         print('就绪。空格=开/合夹爪   '+('' if a.no_policy else 'g=开始一轮   运行中按任意键=停止   ')+'连按两次 q=退出',flush=True)
         gs=robot.ready_info.get('gripper');closed=gs=='closed';quit_at=0;stopped_at=0;last_print=0;last_hz=0;dt=1/30
         print({'closed':'夹爪启动时保持原状：合着，已夹紧','open':'夹爪启动时保持原状：开着'}.get(gs,'夹爪位置未读到：保持放松不出力，按空格夹紧'),flush=True)
         while True:
             tick=time.monotonic();robot.heartbeat()
+            if client is not None:client.raise_observation_error()
             for e in robot.poll_events():
                 if e[0]=='limit':print('⚠ 关节超出限位：'+', '.join(f'J{j} 超出 {d:+.0f}°' for j,d in e[1]),flush=True)
                 elif e[0]=='fatal':raise RuntimeError('机械臂进程停止：'+str(e[1]))
@@ -168,8 +173,7 @@ def main():
                     continue
                 if state=='human':
                     if k==' ':
-                        reset_policy_stream()
-                        if robot.engage():segment('policy',time.monotonic());state='run';print('▶ 交还模型（空格=再次接管）',flush=True)
+                        if robot.engage():reset_policy_stream();segment('policy',time.monotonic());state='run';print('▶ 交还模型（空格=再次接管）',flush=True)
                         else:print('机械臂未进入控制模式，仍由你控制',flush=True)
                     elif k.lower()=='x':finish('operator_end');stopped_at=tick
                     else:print('你在控制中：空格=交还模型   x=结束这一轮',flush=True)
@@ -190,14 +194,15 @@ def main():
                     if usb.connected:print('USB 还插着：先拔出再开始',flush=True);continue
                     if not closed:print('夹爪是开的：先按空格夹紧插头',flush=True);continue
                     if robot.frame_age()>0.25:print('相机画面过期，稍等',flush=True);continue
-                    reset_policy_stream();robot.log=[]  # drop any late chunk from the last trial
+                    robot.log=[]
                     n=len(results)+1;robot.start_video(session/f'trial-{n:02d}.mp4')
                     if not robot.engage():robot.stop_video();print('机械臂未进入控制模式，未开始',flush=True);continue
+                    reset_policy_stream()  # activate sender only after engage succeeds
                     state='run';ins=Inserter(kin) if kin else None;now=time.monotonic()
                     trial={'n':n,'t0':now,'start_wall':time.time(),'inserted_at':None,'checkpoint':a.checkpoint,'hil':a.hil,'epoch':a.epoch,
                            'segments':[{'controller':'policy','t0':now,'t1':None}],'clock':'time.monotonic(), shared with flight.jsonl and trial-NN.timestamps.json',
-                           'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'ki_version':'v2' if a.ki>0 else None,'smooth':SMOOTH if a.smooth else None,'actions_per_chunk':a.actions_per_chunk,
-                           'threshold':a.threshold,'async_client_version':'timed_stream_v1','usb_signal':usb.describe()}
+                           'stiffness':a.stiffness,'kp':robot.ready_info.get('kp',a.kp),'kd':robot.ready_info.get('kd',a.kd),'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,'ki_version':'v2' if a.ki>0 else None,'smooth':SMOOTH if a.smooth else None,'actions_per_chunk':a.actions_per_chunk,
+                           'threshold':a.threshold,'async_client_version':'continuous_stream_v2','trajectory_version':'bounded_accel_v2' if a.smooth else 'legacy_velocity_clip','usb_signal':usb.describe()}
                     print('▶ 模型开始'+('（空格=接管，其他键=结束）' if a.hil else '（任意键停止）'),flush=True)
                 elif k.lower()=='q':
                     if tick-quit_at<2:raise KeyboardInterrupt
@@ -221,7 +226,6 @@ def main():
                     if stage=='policy':
                         client.observe_queue()
                         if client.actions_available():client.control_loop_action()
-                        if client._ready_to_send_observation():client.control_loop_observation(task='')
                     elif target is not None:robot.send_target(target,stage)
                     elif stage in ('search_failed','push_failed'):finish(stage);continue
                     if usb.connected and trial['inserted_at'] is None:
@@ -244,7 +248,8 @@ def main():
             except Exception:pass
         usb.stop()
         if client is not None:
-            client.pause_stream('shutdown');client.stop();client.async_trace.flush()
+            client.pause_stream('shutdown');client.stop_observation_sender(wait=False)
+            client.stop();client.stop_observation_sender();client.async_trace.flush()
         else:robot.disconnect()
         (session/'events.json').write_text(json.dumps(robot.events,default=str))
         lock.close()

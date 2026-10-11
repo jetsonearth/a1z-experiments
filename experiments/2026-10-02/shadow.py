@@ -47,7 +47,8 @@ def main():
           'gripper_max_torque_nm':(ROOT/'gripper_max_torque.txt').read_text().strip() if (ROOT/'gripper_max_torque.txt').exists() else None}
     rows=[];robot=bus=pipe=None;done=threading.Event()
     try:
-        pipe=rs.pipeline();cfg=rs.config()
+        from wrist_camera import enable_wrist
+        pipe=rs.pipeline();cfg=rs.config();enable_wrist(rs,cfg)
         cfg.enable_stream(rs.stream.color,640,480,rs.format.rgb8,30)  # same stream as recording
         # Depth must be on too, exactly as in recording: with color alone the D405 color image is ~40% darker
         # under the same light (measured 76 vs 124), which put every inference image off the training distribution.

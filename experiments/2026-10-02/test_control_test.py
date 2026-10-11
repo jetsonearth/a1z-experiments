@@ -39,6 +39,7 @@ class FakeRobot:
     def start_video(self,p):self.calls.append('video')
     def stop_video(self):pass
     def command_gripper(self,c):self.calls.append(f'grip:{c}')
+    def set_grip_force(self,nm):self.calls.append(f'force:{nm}')
     def disconnect(self):pass
 
 
@@ -76,7 +77,7 @@ def main():
             (1.3,'usb0'),(1.4,lambda:drag(TAUGHT+[0,0,0.05,0,0,0],0.2)),(1.8,'g'),   # A1 from ~5 mm above
             (7.5,'1'),                                   # relabel run 1 by hand
             (7.8,lambda:drag(START,0.2)),(8.2,'r'),(8.3,lambda:drag(TAUGHT,1.0)),(9.4,'usb1'),
-            (10.3,'usb0'),(10.4,lambda:drag(START+0.02,0.2)),(10.8,'p'),
+            (10.3,'usb0'),(10.4,lambda:drag(START+0.02,0.2)),(10.8,'p'),(11.2,']'),   # live grip force during the replay
             (18.0,'q'),(18.1,'q')]
     def fake_keys(events,stop):
         t0=time.monotonic()
@@ -105,6 +106,7 @@ def main():
         assert np.allclose(demo['samples'][0]['q'],START,atol=1e-6)
         assert r2['kind']=='A2 回放' and r2['success'] and r2['end_reason']=='usb_inserted',(r2['kind'],r2['end_reason'])
         assert r2['operator_label']=='charging' and r2['operator_label_auto']
+        assert 'force:4.5' in robots['r'].calls and r2['grip_nm']==4.0  # ] raised the force without stopping the run
         print('control test OK',robots['r'].calls,r1['end_dxyz_mm'],r2['duration_s'])
 
 if __name__=='__main__':main()

@@ -27,13 +27,15 @@ LIVE_JPEG='/dev/shm/a1z_live.jpg'  # read by console/server.py
 @RobotConfig.register_subclass('a1z')
 @dataclass
 class A1ZConfig(RobotConfig):
-    stiffness:float=1.0          # fraction of vendor default kp while engaged
-    max_joint_speed:float=0.5    # rad/s, cap on how fast the commanded target may move
-    max_target_gap:float=0.35    # rad (~20 deg) between policy target and measured pose
-    integral_gain:float=0.0      # 1/s, outer integral on joint position (0 = off, vendor PD only)
-    integral_max_deg:float=3.0   # clamp of the integral offset per joint
+    stiffness:float|None=None    # legacy: kp = stiffness x vendor kp, vendor kd; None = robot_proc.DEFAULT_KP/KD (dimos)
+    max_joint_speed:float=4.0    # rad/s target rate = the SDK's own commanded-velocity saturation (our 0.5 cap removed 2026-10-09)
+    max_target_gap:float|None=None  # rad; None = no target-gap stop (our 20 deg stop removed 2026-10-09, user: too conservative)
+    integral_gain:float=2.0      # 1/s, outer integral on joint position (0 = off); default on since 2026-10-09
+    integral_max_deg:float=1.0   # clamp of the integral offset per joint (1 deg with the stiffer default gains)
     smooth:dict|None=None        # {'accel','soft_start_s','vel_ff'}; None = legacy velocity-clipped target
-    grip_hold_nm:float|None=None # gripper current limit outside policy control (None = configured full force always)
+    grip_hold_nm:float|None=1.5  # gripper force outside policy control (None = configured full force always)
+    kp:list|None=None            # per-joint kp while engaged; overrides stiffness x vendor kp (e.g. dimos 80,80,80,50,20,20)
+    kd:list|None=None            # per-joint kd while engaged; None = vendor default kd
     out_dir:str='.'
     width:int=640
     height:int=480
@@ -118,7 +120,8 @@ class A1Z(Robot):
     def connect(self,calibrate:bool=True):
         if self._proc is not None:return
         import pyrealsense2 as rs
-        self._pipe=rs.pipeline();cfg=rs.config()
+        from wrist_camera import enable_wrist
+        self._pipe=rs.pipeline();cfg=rs.config();self.wrist_serial=enable_wrist(rs,cfg)
         cfg.enable_stream(rs.stream.color,self.config.width,self.config.height,rs.format.rgb8,self.config.fps)  # same as recording
         # Depth must be on too, exactly as in recording: with color alone the D405 color image is ~40% darker
         # under the same light (measured 76 vs 124), which put every inference image off the training distribution.
@@ -131,7 +134,7 @@ class A1Z(Robot):
         self.cmd_q=ctx.Queue();self.evt_q=ctx.Queue()
         self._proc=ctx.Process(target=robot_proc.run,args=(self.link,self.state,self.cmd_q,self.evt_q,self.config.out_dir,
                                self.config.stiffness,self.config.max_joint_speed,self.config.max_target_gap,
-                               self.config.integral_gain,self.config.integral_max_deg,self.config.grip_hold_nm,self.config.smooth),daemon=False)
+                               self.config.integral_gain,self.config.integral_max_deg,self.config.grip_hold_nm,self.config.smooth,self.config.kp,self.config.kd),daemon=False)
         self._proc.start()
         deadline=time.monotonic()+40
         while time.monotonic()<deadline:
@@ -166,6 +169,10 @@ class A1Z(Robot):
 
     def commanded(self):
         return np.array(self.state[22:28],dtype=float)
+
+    def temps(self):
+        """(gripper motor temperature, hottest arm joint) in deg C from the robot process; NaN until the first reading."""
+        return float(self.state[robot_proc.STATE_N-2]),float(self.state[robot_proc.STATE_N-1])
 
     def get_observation(self):
         q,g=self.measured()
@@ -202,8 +209,17 @@ class A1Z(Robot):
             self.log.append({'t':time.monotonic(),'stage':stage,'q':q.tolist(),'policy':np.asarray(target,dtype=float).tolist(),
                              'cmd':self.commanded().tolist(),**extra})
 
+    def freeze_integral(self,frozen:bool):
+        """Hold the integral offset at its current value (True) or resume integrating (False); see robot_proc."""
+        self.cmd_q.put(('integral_freeze',bool(frozen)))
+
     def command_gripper(self,closed:bool):
         self.cmd_q.put(('gripper',bool(closed)))
+
+    def set_grip_force(self,nm:float,hold_nm:float|None=None):
+        """Change the gripper force (N m at the motor) live; robot_proc ramps to it and answers with a grip_force event.
+        hold_nm also changes the force while floating (drag mode); None keeps the hold set at startup."""
+        self.cmd_q.put(('grip_force',float(nm),None if hold_nm is None else float(hold_nm)))
 
     def disconnect(self):
         self._cam_stop.set();self.stop_video()

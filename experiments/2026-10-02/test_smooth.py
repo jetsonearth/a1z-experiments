@@ -41,8 +41,7 @@ def main():
     cmd=np.zeros(2);v=np.zeros(2);tg=np.array([0.3,-0.1]);vs=[]
     for _ in range(400):
         pv=v.copy();cmd,v=smooth_step(cmd,v,tg,0.5,3.0,0.01);vs.append(v.copy())
-        arrived=np.isclose(cmd,tg)  # landing on the target zeroes v in one step (residual speed < sqrt(2*amax*step))
-        assert np.all(np.abs(v)<=0.5+1e-9) and np.all((np.abs(v-pv)<=3.0*0.01+1e-9)|arrived)
+        assert np.all(np.abs(v)<=0.5+1e-9) and np.all(np.abs(v-pv)<=3.0*0.01+1e-9)
         assert np.all(np.sign(tg)*(tg-cmd)>=-1e-12)
     assert np.allclose(cmd,tg),cmd
     print('smooth_step OK')

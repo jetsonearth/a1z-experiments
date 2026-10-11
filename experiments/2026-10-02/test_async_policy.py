@@ -42,7 +42,7 @@ class OfflineRobotClient(RobotClient):
         self.action_chunk_size = 30
         self.action_queue_size = []
         self.must_go = threading.Event()
-        self.config = types.SimpleNamespace(aggregate_fn=lambda old, new: .3*old+.7*new)
+        self.config = types.SimpleNamespace(fps=30,aggregate_fn=lambda old, new: .3*old+.7*new)
         self.robot = types.SimpleNamespace(action_features=[f'j{i}' for i in range(7)],
                                           send_action=lambda action: action)
 
@@ -72,7 +72,8 @@ class AsyncTests(unittest.TestCase):
         overlap = next(r for r in reversed(c.async_trace.rows) if r['event']=='chunk_received')
         self.assertGreater(overlap['overlap'], 0)
         result = c.control_loop_action()
-        self.assertAlmostEqual(result['j0'], 1.7, places=5)
+        self.assertAlmostEqual(result['j0'], 1.0, places=5)
+        self.assertAlmostEqual(result['j6'], 1.7, places=5)
 
     def test_duplicate_forced_and_out_of_order_observations_are_rejected(self):
         s = self.server
@@ -178,6 +179,88 @@ class AsyncTests(unittest.TestCase):
         self.assertEqual([r['event'] for r in rows], ['observation_send', 'observation_sent'])
         self.assertEqual(rows[0]['frame_age_s'], .02)
         self.assertEqual(rows[0]['queue'], 0)
+
+    def test_splice_preserves_next_two_points_and_reaches_new_prediction(self):
+        c=self.client;start=c.latest_action
+        c._aggregate_action_queues(actions(start,1.),c.config.aggregate_fn)
+        c._aggregate_action_queues(actions(start,3.),c.config.aggregate_fn)
+        queued=list(c.action_queue.queue)
+        self.assertEqual(queued[0].get_action()[0].item(),1.)
+        self.assertEqual(queued[1].get_action()[0].item(),1.)
+        self.assertEqual(queued[-1].get_action()[0].item(),3.)
+        arm=[a.get_action()[0].item() for a in queued]
+        self.assertTrue(all(a<=b for a,b in zip(arm,arm[1:])))
+        self.assertTrue(all(1<=v<=3 for v in arm))
+        # Repeated arrivals before consumption cannot move the imminent points.
+        c._aggregate_action_queues(actions(start,-2.),c.config.aggregate_fn)
+        self.assertEqual(c.control_loop_action()['j0'],1.)
+        self.assertEqual(c.control_loop_action()['j0'],1.)
+
+    def test_splice_keeps_imminent_velocity_for_nonconstant_trajectory(self):
+        c=self.client;start=c.latest_action
+        ramp=actions(start,0.)
+        for i,a in enumerate(ramp):a.action[:6]=i*.01
+        c._aggregate_action_queues(ramp,c.config.aggregate_fn)
+        before=list(c.action_queue.queue)
+        q0=before[0].get_action()[:6].clone();dq=before[1].get_action()[:6]-q0
+        c._aggregate_action_queues(actions(start,-1.),c.config.aggregate_fn)
+        after=list(c.action_queue.queue)
+        torch.testing.assert_close(after[0].get_action()[:6],q0)
+        torch.testing.assert_close(after[1].get_action()[:6]-after[0].get_action()[:6],dq)
+        # Repeated replans while consuming actions must still adopt the new goal.
+        for _ in range(30):
+            for _ in range(3):c.control_loop_action()
+            c._aggregate_action_queues(actions(c.latest_action,-1.),c.config.aggregate_fn)
+        self.assertAlmostEqual(c.control_loop_action()['j0'],-1.,places=3)
+
+    def test_slow_sender_does_not_block_actions_or_stream_reset(self):
+        c=self.client;start=c.latest_action
+        c._aggregate_action_queues(actions(start),c.config.aggregate_fn)
+        c.robot.get_observation=lambda:{'joint':0.}
+        c.robot.frame_age=lambda:0.
+        c._ready_to_send_observation=lambda:True
+        entered,release=threading.Event(),threading.Event();sent=[]
+        def send(obs):
+            sent.append(obs);entered.set()
+            if not release.wait(2):raise RuntimeError('test send timeout')
+            return True
+        try:
+            with patch.object(RobotClient,'send_observation',side_effect=send):
+                c.start_observation_sender()
+                self.assertTrue(entered.wait(1))
+                # If the worker holds a control lock, this bounded thread stalls.
+                completed=threading.Event()
+                def action_and_reset():
+                    c.control_loop_action();c.pause_stream('stop');c.reset_stream();completed.set()
+                worker=threading.Thread(target=action_and_reset);worker.start()
+                self.assertTrue(completed.wait(.5),'sender blocked action/pause/reset')
+                c.stop_observation_sender(wait=False)
+                release.set();worker.join(1);c.stop_observation_sender()
+                self.assertEqual(len(sent),1)  # no queued observation backlog
+                self.assertEqual(sent[0].get_timestep(),start)
+                c._aggregate_action_queues(actions(start),c.config.aggregate_fn)
+                self.assertTrue(c.action_queue.empty())
+        finally:
+            release.set();c.stop_observation_sender()
+
+    def test_sender_error_reaches_control_thread(self):
+        c=self.client;c._ready_to_send_observation=lambda:True
+        def broken():raise ValueError('stale camera')
+        c.robot.get_observation=broken
+        c.start_observation_sender();c._observation_thread.join(1)
+        self.assertFalse(c._observation_thread.is_alive())
+        with self.assertRaisesRegex(RuntimeError,'observation sender failed'):
+            c.raise_observation_error()
+        c.stop_observation_sender()
+
+    def test_short_overlap_and_reset_have_no_cross_trial_blend(self):
+        c=self.client;start=c.latest_action
+        c._aggregate_action_queues(actions(start,count=3),c.config.aggregate_fn)
+        c._aggregate_action_queues(actions(start,2.,count=5),c.config.aggregate_fn)
+        self.assertEqual(c.control_loop_action()['j0'],1.)
+        c.pause_stream('takeover');c.reset_stream()
+        c._aggregate_action_queues(actions(c.latest_action,4.),c.config.aggregate_fn)
+        self.assertEqual(c.control_loop_action()['j0'],4.)
 
 
 if __name__ == '__main__':

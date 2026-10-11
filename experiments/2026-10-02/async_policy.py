@@ -1,9 +1,10 @@
 """A1Z-local adapters for LeRobot async inference; no hardware imports.
 
-Keep LeRobot's single pending observation and overlapping-action fusion, but do
-not reject fresh observations just because raw joint angles changed little.
+Keep latest-only observations; splice overlapping arm predictions without
+rewriting the next two queued points. Observation RPC runs off the action loop.
 """
 import json
+from copy import copy
 from pathlib import Path
 from queue import Empty, Queue
 import threading
@@ -97,6 +98,9 @@ class TimedClientMixin:
         self._stream = 0
         self._last_action_time = None
         self._empty_since = None
+        self._observation_stop = threading.Event()
+        self._observation_thread = None
+        self._observation_error = None
         self.async_trace = Timeline()
 
     def _record(self, event, **fields):
@@ -139,13 +143,75 @@ class TimedClientMixin:
                              reason='refilled', queue=depth)
                 self._empty_since = None
 
-    def send_observation(self, obs):
+    def start_observation_sender(self):
+        """One sender, no backlog. Capture the current observation at each send.
+
+        Capture + step tagging share the short stream lock. Serialization/RPC
+        never hold it, so a slow send cannot block actions, pause or reset.
+        Old in-flight responses remain excluded by the stream timestep fence.
+        """
+        if self._observation_thread is not None:
+            raise RuntimeError('observation sender already started')
+        self._observation_stop.clear()
+        self._observation_thread = threading.Thread(
+            target=self._observation_loop, name='a1z-observation-sender', daemon=True)
+        self._observation_thread.start()
+
+    def stop_observation_sender(self, wait=True):
+        self._observation_stop.set()
+        if wait and self._observation_thread is not None:
+            self._observation_thread.join(timeout=2)
+            if self._observation_thread.is_alive():
+                raise RuntimeError('observation sender did not stop after transport closure')
+
+    def raise_observation_error(self):
+        with self._stream_lock:
+            error=self._observation_error
+            self._observation_error=None
+        if error is not None:
+            raise RuntimeError('observation sender failed') from error
+
+    def _observation_loop(self):
+        from lerobot.async_inference.helpers import TimedObservation
+        period=1.0/self.config.fps
+        while not self._observation_stop.is_set():
+            started=time.monotonic();obs=None;stream=None
+            try:
+                with self._stream_lock:
+                    stream=self._stream
+                    if self._stream_active and self._ready_to_send_observation():
+                        raw=self.robot.get_observation()
+                        raw['task']=''
+                        with self.latest_action_lock:
+                            step=self.latest_action
+                        obs=TimedObservation(timestamp=time.time(), observation=raw,
+                                             timestep=max(step,0))
+                        obs.must_go=self.must_go.is_set() and self.action_queue.empty()
+                if obs is not None:
+                    # Stop/reset may happen after capture. Never retag an old
+                    # image with a new stream's step, even if its RPC is delayed.
+                    ok=self.send_observation(obs, stream=stream)
+                    if not ok:
+                        raise RuntimeError('observation RPC reported failure')
+                    with self._stream_lock:
+                        if self._stream==stream and obs.must_go:
+                            self.must_go.clear()
+            except Exception as exc:
+                with self._stream_lock:
+                    if self._stream_active and self._stream==stream:
+                        self._observation_error=exc
+                        self._record('observation_error', error=type(exc).__name__)
+                        return
+            self._observation_stop.wait(max(0.0,period-(time.monotonic()-started)))
+
+    def send_observation(self, obs, *, stream=None):
+        stream=self._stream if stream is None else stream
         started = time.monotonic()
-        self._record('observation_send', step=obs.get_timestep(),
+        self.async_trace.record('observation_send', stream=stream, step=obs.get_timestep(),
                      observation_wall=obs.get_timestamp(), must_go=obs.must_go,
                      queue=self.action_queue.qsize(), frame_age_s=self.robot.frame_age())
         result = super().send_observation(obs)
-        self._record('observation_sent', step=obs.get_timestep(), ok=result,
+        self.async_trace.record('observation_sent', stream=stream, step=obs.get_timestep(), ok=result,
                      duration_s=time.monotonic()-started)
         return result
 
@@ -172,7 +238,27 @@ class TimedClientMixin:
                          if incoming_actions else None))
             # A fully stale result must not clear an already valid new queue.
             if future:
-                super()._aggregate_action_queues(future, aggregate_fn)
+                # Preserve the next two queued arm positions (and their discrete
+                # velocity), then fade to the new prediction over available
+                # overlap. A quintic envelope has zero first/second derivatives
+                # at its ends. Gripper fusion retains upstream semantics.
+                ranks={a.get_timestep():i for i,a in enumerate(overlap)}
+                blended=[]
+                for action in future:
+                    step=action.get_timestep()
+                    if step not in old:
+                        blended.append(action);continue
+                    rank=ranks[step];count=len(overlap)
+                    x=max(0.0,min(1.0,(rank-1)/max(1,count-3)))
+                    weight=x*x*x*(10+x*(-15+6*x)) if count>=4 else 0.0
+                    raw=action.get_action()
+                    value=(aggregate_fn(old[step],raw) if aggregate_fn else raw).clone()
+                    value[:6]=(1-weight)*old[step][:6]+weight*raw[:6]
+                    updated=copy(action);updated.action=value;blended.append(updated)
+                self._record('chunk_splice', overlap=len(overlap),
+                             held_arm_steps=min(2,len(overlap)),
+                             transition_steps=max(0,len(overlap)-2))
+                super()._aggregate_action_queues(blended, lambda old,new:new)
 
     def control_loop_action(self, *args, **kwargs):
         with self._stream_lock:
@@ -181,6 +267,7 @@ class TimedClientMixin:
             started = time.monotonic()
             result = super().control_loop_action(*args, **kwargs)
             self._record('action', step=self.latest_action, queue=self.action_queue.qsize(),
+                         duration_s=time.monotonic()-started,
                          interval_s=(started-self._last_action_time
                                      if self._last_action_time is not None else None))
             self._last_action_time = started

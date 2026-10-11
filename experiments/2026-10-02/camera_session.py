@@ -115,7 +115,8 @@ def main():
         import numpy as np
         import pyrealsense2 as rs
         video=StreamingVideo(args.output/'videos'/'wrist.mp4')
-        pipe=rs.pipeline();config=rs.config()
+        from wrist_camera import enable_wrist
+        pipe=rs.pipeline();config=rs.config();enable_wrist(rs,config)
         config.enable_stream(rs.stream.color,640,480,rs.format.rgb8,30)
         config.enable_stream(rs.stream.depth,640,480,rs.format.z16,30)
         profile=pipe.start(config)

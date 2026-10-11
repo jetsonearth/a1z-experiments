@@ -30,6 +30,7 @@ import time
 ROOT=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT))
 RUNS=ROOT/'control-runs'
+GRIP_MAX_NM=11.0  # G1Z motor peak; the SDK clips the gripper current limit there
 
 
 def keys(events,stop):
@@ -43,6 +44,16 @@ def keys(events,stop):
             events.put(k.decode(errors='ignore'))
     finally:
         if saved:termios.tcsetattr(fd,termios.TCSADRAIN,saved)
+
+
+def load_demo(arg):
+    """--demo: a saved A2 recording, or 'latest' (newest control-runs/*/demo-*.json by name = session time + clock time)."""
+    if not arg:return None
+    f=max(RUNS.glob('*/demo-*.json'),key=lambda x:(x.parent.name,x.name),default=None) if arg=='latest' else Path(arg)
+    if f is None or not f.exists():raise SystemExit(f'找不到示范文件：{arg}')
+    d=json.loads(f.read_text())
+    if len(d.get('samples',[]))<2:raise SystemExit(f'示范文件没有轨迹：{f}')
+    d['file']=f'{f.parent.name}/{f.name}';return d
 
 
 def smooth_plan(q0,q1,rate):
@@ -85,23 +96,27 @@ def target_at(plan,t):
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument('--stiffness',type=float,default=1.0);p.add_argument('--max-speed',type=float,default=0.5)
+    p.add_argument('--stiffness',type=float,default=None,help='legacy: kp = stiffness x vendor kp with vendor kd (all runs before 2026-10-09); default: dimos gains 80/80/80/50/20/20, kd 3/3/3/0.7/0.4/0.4');p.add_argument('--kp',type=float,nargs=6,default=None,help='per-joint kp while engaged (overrides --stiffness; default: dimos 80 80 80 50 20 20)')
+    p.add_argument('--kd',type=float,nargs=6,default=None,help='per-joint kd while engaged (default: dimos 3 3 3 0.7 0.4 0.4)')
+    p.add_argument('--max-speed',type=float,default=4.0,help="rad/s target rate; 4 = the SDK's commanded-velocity saturation")
     p.add_argument('--approach-rate',type=float,default=0.1,help='rad/s of the largest joint while moving to the taught pose / demo start')
     p.add_argument('--replay-speed',type=float,default=0.5,help='A2 playback speed (1 = as demonstrated)')
     p.add_argument('--hold',type=float,default=6.0,help='seconds to hold the final target before giving up')
-    p.add_argument('--max-start-gap',type=float,default=0.25,help='rad: arm must start this close to the taught pose / demo start')
+    p.add_argument('--max-start-gap',type=float,default=None,help='rad: optionally refuse to start farther than this from the taught pose / demo start (default: no check)')
     p.add_argument('--after-insert',type=float,default=1.0)
     p.add_argument('--pre-mm',type=float,default=15.0,help='A1: hover this far straight above the taught pose before descending')
     p.add_argument('--settle',type=float,default=2.0,help='A1: seconds to hold the hover pose before measuring and descending')
     p.add_argument('--descend-speed',type=float,default=5.0,help='A1: vertical descent speed, mm/s')
-    p.add_argument('--ki',type=float,default=0.0,help='integral gain 1/s on joint position (0 = off, vendor PD only)')
-    p.add_argument('--grip-hold',type=float,default=None,help='gripper force (N m) outside policy control; full force only while the arm is engaged (default: full force always)')
-    p.add_argument('--ki-max',type=float,default=3.0,help='integral offset clamp per joint, deg')
+    p.add_argument('--ki',type=float,default=2.0,help='integral gain 1/s on joint position (0 = off; default 2 since 2026-10-09)')
+    p.add_argument('--grip-hold',type=float,default=1.5,help='gripper force (N m) outside policy control; full force only while the arm is engaged (default 1.5; full force only while engaged)')
+    p.add_argument('--ki-max',type=float,default=1.0,help='integral offset clamp per joint, deg')
+    p.add_argument('--demo',default=None,help="A2: load a saved recording (path, or 'latest' = newest control-runs/*/demo-*.json) so the same demo is replayed across gain settings")
     a=p.parse_args()
     if not 0<a.replay_speed<=1:p.error('--replay-speed must be in (0,1]')
     import fcntl
     import numpy as np
     from a1z_robot import A1Z,A1ZConfig
+    from robot_proc import gains_label
     from usb_watch import UsbWatcher
     from insertion import Kin
     kin=Kin();fk=lambda q:kin.fk(q)[:3,3]*1000
@@ -111,13 +126,15 @@ def main():
     if usb.connected:print('USB 现在是插着的：开始前请先拔出（成功信号以开始时的状态为基线）',flush=True);return
     taught=json.loads((RUNS/'taught.json').read_text()) if (RUNS/'taught.json').exists() else None
     mode='【控制层测试：没有模型。t=记下插好的姿态  g=走回去(A1)  r=录一条示范  p=回放(A2)】'
-    print('='*60+'\n'+mode+f'\n刚度 {a.stiffness:.0%} 厂家默认，'+(f'积分补偿 开（{a.ki}/s，上限 {a.ki_max}°）' if a.ki>0 else '积分补偿 关（和推理时同一套控制）')+'\n'+'='*60,flush=True)
+    print('='*60+'\n'+mode+'\n'+gains_label(a.stiffness,a.kp,a.kd)+'，'+(f'积分补偿 开（{a.ki}/s，上限 {a.ki_max}°）' if a.ki>0 else '积分补偿 关')+'\n'+'='*60,flush=True)
     if taught:print(f"已有示教点（{taught['saved']}）：{np.round(taught['p_mm'],1).tolist()} mm。夹法变了就重新按 t。",flush=True)
+    demo=load_demo(a.demo)
+    if demo:print(f"已载入示范 {demo['file']}：{demo['samples'][-1]['t']:.1f}s，{len(demo['samples'])} 帧（{'USB 已确认' if demo['usb_at'] is not None else '未经 USB 确认'}）。按 p 回放",flush=True)
     if input(f'{mode} 现场就绪，输入 READY：').strip()!='READY':return
-    robot=A1Z(A1ZConfig(stiffness=a.stiffness,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max,grip_hold_nm=a.grip_hold))
+    robot=A1Z(A1ZConfig(stiffness=a.stiffness,kp=a.kp,kd=a.kd,max_joint_speed=a.max_speed,out_dir=str(session),integral_gain=a.ki,integral_max_deg=a.ki_max,grip_hold_nm=a.grip_hold))
     robot.connect()
     events=Queue();stop=threading.Event();results=[];labels={}
-    state='float';run=None;pending=None;demo=None;rec=None
+    state='float';run=None;pending=None;rec=None
     def finish(reason):
         nonlocal state,run,pending
         robot.disengage(reason);state='float';robot.stop_video()
@@ -149,31 +166,34 @@ def main():
         robot.log=[];n=len(results)+1;robot.start_video(session/f'run-{n:02d}.mp4')
         if not robot.engage():robot.stop_video();print('机械臂未进入控制模式，未开始',flush=True);return
         now=time.monotonic();state='run'
-        run={'n':n,'kind':kind,'t0':now,'start_wall':time.time(),'inserted_at':None,'stiffness':a.stiffness,'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,
+        run={'n':n,'kind':kind,'t0':now,'start_wall':time.time(),'inserted_at':None,'grip_nm':grip_nm,'stiffness':a.stiffness,'kp':robot.ready_info.get('kp',a.kp),'kd':robot.ready_info.get('kd',a.kd),'max_speed':a.max_speed,'ki':a.ki,'ki_max_deg':a.ki_max,
              'plan_s':plan[-1][0],'hold_s':a.hold,'ref_q':list(ref_q),'ref_p_mm':fk(ref_q).tolist(),'usb_signal':usb.describe(),
              'clock':'time.monotonic(), shared with flight.jsonl',**extra}
         run['plan']=plan
         print(f'▶ {kind} 开始：{plan[-1][0]:.1f}s 动作 + 最多保持 {a.hold:.0f}s（任意键停止）',flush=True)
     try:
         threading.Thread(target=keys,args=(events,stop),daemon=True).start()
-        gs=robot.ready_info.get('gripper');closed=gs=='closed';quit_at=0;t_at=0;stopped_at=0;last_print=0;dt=1/30
+        gs=robot.ready_info.get('gripper');closed=gs=='closed';grip_nm=float(robot.ready_info.get('grip_full_nm') or 4.0);quit_at=0;t_at=0;stopped_at=0;last_print=0;dt=1/30
         print({'closed':'夹爪保持合着','open':'夹爪开着'}.get(gs,'夹爪位置未读到：放松不出力，按空格夹紧'),flush=True)
-        print('就绪。空格=开/合夹爪   t=示教(插好时)   g=走回示教点   r=录示范   p=回放   w=显示当前位置   连按两次 q=退出',flush=True)
+        print('就绪。空格=开/合夹爪   t=示教(插好时)   g=走回示教点   r=录示范   p=回放   w=显示当前位置   [ ]=夹力 −/+0.5 N·m   连按两次 q=退出',flush=True)
         while True:
             tick=time.monotonic();robot.heartbeat()
             for e in robot.poll_events():
                 if e[0]=='limit':print('⚠ 关节超出限位：'+', '.join(f'J{j} 超出 {d:+.0f}°' for j,d in e[1]),flush=True)
                 elif e[0]=='fatal':raise RuntimeError('机械臂进程停止：'+str(e[1]))
                 elif e[0]=='disengaged' and state=='run':print('安全停止：'+str(e[1]),flush=True)
+                elif e[0]=='grip_force':print(f"夹力已设为 {e[1]['full_nm']} N·m（控制中）"+(f"，浮动时 {e[1]['hold_nm']} N·m" if e[1]['hold_nm'] is not None else ''),flush=True)
             q,_=robot.measured()
             if rec is not None:
                 rec['samples'].append({'t':round(tick-rec['t0'],4),'q':q.tolist()})
                 if usb.connected and rec['usb_at'] is None:rec['usb_at']=round(tick-rec['t0'],3);print(f"USB 已插入 @ {rec['usb_at']}s，0.5s 后自动停止录制",flush=True)
                 if rec['usb_at'] is not None and tick-rec['t0']>=rec['usb_at']+0.5:
-                    demo=rec;rec=None;f=session/f"demo-{time.strftime('%H%M%S')}.json";f.write_text(json.dumps(demo))
+                    demo=rec;rec=None;f=session/f"demo-{time.strftime('%H%M%S')}.json";f.write_text(json.dumps(demo));demo['file']=f'{session.name}/{f.name}'
                     print(f"录好了：{demo['samples'][-1]['t']:.1f}s，{len(demo['samples'])} 帧 → {f.name}。拔出插头，把手臂带回起点附近，按 p 回放",flush=True)
             while not events.empty():
                 k=events.get()
+                if k in '[]':  # live gripper force, 0.5 N m steps, also during a run (does not stop it)
+                    grip_nm=round(min(GRIP_MAX_NM,max(0.5,grip_nm+(0.5 if k==']' else -0.5))),2);robot.set_grip_force(grip_nm);continue
                 if state=='run':finish('operator_stop');stopped_at=tick;continue
                 if k in '123' and pending is not None:set_label(pending,int(k));continue
                 if k==' ':
@@ -190,7 +210,7 @@ def main():
                     if taught is None:print('还没有示教点：先插好按 t',flush=True);continue
                     if not closed:print('夹爪是开的：先按空格夹紧',flush=True);continue
                     gap=float(np.abs(np.array(taught['q'])-q).max())
-                    if gap>a.max_start_gap:print(f'离示教点太远（最大关节差 {np.degrees(gap):.0f}°）：先拖到口上方 2 cm 左右',flush=True);continue
+                    if a.max_start_gap is not None and gap>a.max_start_gap:print(f'离示教点太远（最大关节差 {np.degrees(gap):.0f}°）：先拖到口上方 2 cm 左右',flush=True);continue
                     above=fk(q)-np.array(taught['p_mm'])
                     try:plan,check=approach_plan(kin,q,taught['q'],a.pre_mm,a.approach_rate,a.settle,a.descend_speed)
                     except ValueError as e:print('算不出口上方的姿态：',e,flush=True);continue
@@ -201,17 +221,17 @@ def main():
                         if usb.connected:print('USB 还插着：先拔出再录',flush=True);continue
                         rec={'t0':tick,'usb_at':None,'samples':[],'start_wall':time.time()};print('● 开始录制：拖着完整插一次，USB 识别后自动停止；没识别就插到底后再按 r 停止保存',flush=True)
                     elif rec['samples'] and rec['samples'][-1]['t']>=1.0:
-                        demo=rec;rec=None;f=session/f"demo-{time.strftime('%H%M%S')}.json";f.write_text(json.dumps(demo))
+                        demo=rec;rec=None;f=session/f"demo-{time.strftime('%H%M%S')}.json";f.write_text(json.dumps(demo));demo['file']=f'{session.name}/{f.name}'
                         print(f"录制停止并保存（{'USB 已确认' if demo['usb_at'] is not None else '未经 USB 确认'}）：{demo['samples'][-1]['t']:.1f}s → {f.name}。拔出插头，拖回起点附近，按 p 回放",flush=True)
                     else:rec=None;print('录制太短（<1 s），未保存',flush=True)
                 elif k.lower()=='p':
                     if demo is None:print('还没有录好的示范：按 r 录一条',flush=True);continue
                     if not closed:print('夹爪是开的：先按空格夹紧',flush=True);continue
                     s=demo['samples'];q_start=np.array(s[0]['q']);gap=float(np.abs(q_start-q).max())
-                    if gap>a.max_start_gap:print(f'离示范起点太远（最大关节差 {np.degrees(gap):.0f}°）：先拖回起点附近',flush=True);continue
+                    if a.max_start_gap is not None and gap>a.max_start_gap:print(f'离示范起点太远（最大关节差 {np.degrees(gap):.0f}°）：先拖回起点附近',flush=True);continue
                     move=smooth_plan(q,q_start,a.approach_rate);t_off=move[-1][0]+0.5
                     plan=move+[(t_off+x['t']/a.replay_speed,x['q']) for x in s]
-                    start('A2 回放',plan,s[-1]['q'],{'replay_speed':a.replay_speed,'demo_usb_at':demo['usb_at'],'demo_samples':len(s)})
+                    start('A2 回放',plan,s[-1]['q'],{'replay_speed':a.replay_speed,'demo_usb_at':demo['usb_at'],'demo_samples':len(s),'demo_file':demo.get('file')})
                 elif k.lower()=='w':
                     print(f'当前夹爪尖位置 x/y/z = {np.round(fk(q),1).tolist()} mm（基座坐标）',flush=True)
                 elif k.lower()=='q':

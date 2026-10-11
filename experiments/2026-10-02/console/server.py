@@ -8,8 +8,10 @@ safety layer (robot_proc.py) and its files stay exactly as before; `tmux attach 
 READY is sent only when the operator clicks it in the page and the client is waiting for it.
 
 Reads: tmux pane text (session state), /dev/shm/a1z_live.jpg (wrist camera, written by a1z_robot.py while a
-session runs), flight.jsonl of the newest session (joints, temperatures), trial/run JSON and MP4 files.
-Writes: only operator edits of trial labels / exclusion in trial JSON (marked edited_via=console).
+session runs), /dev/shm/a1z_side.jpg (HIL-SERL side camera, written by whichever process holds it), flight.jsonl of
+the newest session (joints, temperatures), trial/run JSON and MP4 files.
+Writes: only operator edits of trial labels / exclusion in trial JSON (marked edited_via=console), and the side crop in
+../2026-10-09-hilserl/cameras.json. Starts/stops only the side-camera preview (tmux "sidecam"), never the arm.
 """
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
 import json
@@ -18,6 +20,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import shlex
 import subprocess
 import sys
 import threading
@@ -30,6 +33,9 @@ INFER=Path.home()/'a1z-infer'
 CKPTS=INFER/'checkpoints'
 KINDS={'eval':ROOT/'eval-runs','control':ROOT/'control-runs','hil':ROOT/'hil-runs'}
 LIVE='/dev/shm/a1z_live.jpg'
+SIDE_LIVE='/dev/shm/a1z_side.jpg';SIDE_INFO='/dev/shm/a1z_side.json'
+HILSERL=ROOT.parent/'2026-10-09-hilserl';CAMERAS=HILSERL/'cameras.json'
+SIDE_W,SIDE_H=640,480
 PORT=int(os.environ.get('A1Z_CONSOLE_PORT','8780'))
 def _token():
     """Per-machine token kept across server restarts, so an open page keeps working after a restart."""
@@ -64,8 +70,11 @@ def pane_text(lines=400):
     code,out,_=sh(['tmux','capture-pane','-p','-J','-S',f'-{lines}','-t',f'{TMUX}:client'])
     return out if code==0 else ''
 
-MARKERS=[  # (regex, state) — the latest match in the pane decides the state
-    (r'现场就绪，输入 READY：\s*$','await_ready'),
+MARKERS=[  # (regex, state) — the latest match in the pane decides the state; patterns match the client scripts' Chinese output, do not translate
+    (r'现场就绪，输入 READY：','await_ready'),
+    (r'SPACEMOUSE_STARTING','starting'),
+    (r'SPACEMOUSE_HOLD','teleop_hold'),
+    (r'SPACEMOUSE_ACTIVE','teleop_active'),
     (r'就绪。空格=开/合夹爪','idle'),
     (r'已回到重力辅助|回到重力辅助。','idle'),
     (r'▶ 模型开始|▶ 交还模型','running'),
@@ -83,7 +92,7 @@ def session_state():
     for rx,st in MARKERS:
         for m in re.finditer(rx,text,flags=re.M):
             if m.start()>best[1]:best=(st,m.start())
-    mode='control' if '控制层测试' in text else ('hil' if 'HIL 采集模式' in text else ('eval' if '评估模式' in text else None))
+    mode=next((pr['id'] for pr in sorted(PROGRAMS,key=lambda q:q.get('detect_rank',50)) if any(d in text for d in pr.get('detect',()))),None)  # lowest detect_rank wins ties (teleop, control, hil, eval)
     m=re.search(r'模型：(\S+)',text)
     model=m.group(1).replace('/pretrained_model','') if m else None
     return {'state':best[0],'pane':'\n'.join(text.rstrip().splitlines()[-80:]),'mode':mode,'model':model}
@@ -93,50 +102,127 @@ KEYS={'g','s',' ','x','d','i','1','2','3','t','r','p','w','q'}
 def send_key(k):
     if k=='READY':
         st=session_state()
-        if st['state']!='await_ready':return False,'客户端没有在等待 READY'
+        if st['state']!='await_ready':return False,'The client is not waiting for READY'
         sh(['tmux','send-keys','-t',f'{TMUX}:client','-l','READY']);sh(['tmux','send-keys','-t',f'{TMUX}:client','Enter'])
-        return True,'READY 已发送'
+        return True,'READY sent'
     if k=='CANCEL':
         st=session_state()
-        if st['state']!='await_ready':return False,'只能在等待 READY 时取消'
+        if st['state']!='await_ready':return False,'Can only cancel while waiting for READY'
         sh(['tmux','send-keys','-t',f'{TMUX}:client','-l','no']);sh(['tmux','send-keys','-t',f'{TMUX}:client','Enter'])
-        return True,'已取消'
+        return True,'Cancelled'
     if k=='ENTER':
         sh(['tmux','send-keys','-t',f'{TMUX}:client','Enter']);return True,'ok'
-    if k not in KEYS:return False,'不支持的按键'
+    if k not in KEYS:return False,'Unsupported key'
     sh(['tmux','send-keys','-t',f'{TMUX}:client','-l',k]);return True,'ok'
 
+# ---------------- program registry ----------------
+# One entry per launchable program; GET /api/programs sends the public fields to the page, which renders the picker and
+# only the inputs a program declares. Adding a program = adding one entry here (plus `launch`, and `detect` strings that
+# its terminal output prints so session_state() can recognise it, and `detect_rank` to order ties). The POST /api/session/start body keeps its old shape:
+# {"mode": <id>, <input name>: value, ...}; the advanced inputs are optional and the defaults below apply when omitted.
+INPUTS={  # input name -> how the page renders it; "advanced" ones sit in a closed disclosure and are sent only when filled in
+    'model':{'label':'Model','type':'model'},
+    'epoch':{'label':'HG-DAgger round (epoch)','type':'int','min':1,'default':3},
+    'stiffness':{'label':'Stiffness × vendor kp (legacy gains)','type':'number','step':0.1,'placeholder':'default dimos gains'},
+    'ki':{'label':'Integral ki, 1/s','type':'number','step':0.5,'placeholder':'2'},
+    'ki_max':{'label':'Integral cap, deg','type':'number','step':0.5,'placeholder':'1'},
+    'grip_hold':{'label':'Grip hold between trials, N·m','type':'number','step':0.5,'placeholder':'1.5'},
+}
+TUNING=['stiffness','ki','ki_max','grip_hold']  # advanced overrides understood by the eval.sh programs
+PROGRAMS=[
+    {'id':'teleop','label':'SpaceMouse','description':'Move the arm with the SpaceMouse on the Jetson; translation only at startup.',
+     'inputs':[],'advanced':[],'start_label':'Prepare SpaceMouse','note':'Next, confirm on-site readiness before enabling the arm.',
+     'launch':{'type':'script','script':'spacemouse_teleop.py','args':['--execute']},'detect':['SpaceMouse 遥操','SPACEMOUSE_'],'detect_rank':0},
+    {'id':'eval','label':'Eval','description':'Run a trained policy on the arm; label each trial after it ends.',
+     'inputs':['model'],'advanced':TUNING,'launch':{'type':'eval_sh','args':[]},'detect':['评估模式'],'detect_rank':3},
+    {'id':'hil','label':'HIL collection','description':'HG-DAgger: the policy drives, you take over to correct it.',
+     'inputs':['model','epoch'],'advanced':TUNING,'launch':{'type':'eval_sh','args':['--hil']},'detect':['HIL 采集模式'],'detect_rank':2},
+    {'id':'control','label':'Control test','description':'Teach-and-return and record-and-replay, no model.',
+     'inputs':[],'advanced':TUNING,'launch':{'type':'eval_sh','args':['--control']},'detect':['控制层测试'],'detect_rank':1},
+]
+PROGRAM_BY_ID={pr['id']:pr for pr in PROGRAMS}
+
+def programs_public():
+    """What the page needs: the picker entries and the definition of every input they mention."""
+    pub=[{k:v for k,v in pr.items() if k not in ('launch','detect','detect_rank')} for pr in PROGRAMS]
+    names={n for pr in pub for n in pr['inputs']+pr['advanced']}
+    return {'programs':pub,'inputs':{n:INPUTS[n] for n in names}}
+
 def start_session(p):
-    if tmux_alive():return False,'已有会话在运行（先结束它）'
-    mode=p.get('mode','eval')
+    if tmux_alive():return False,'A session is already running (end it first)'
+    prog=PROGRAM_BY_ID.get(p.get('mode','eval'));launch=(prog or {}).get('launch') or {}
+    if launch.get('type')=='script':
+        script=ROOT/launch['script']
+        if not script.exists():return False,'SpaceMouse program not installed'
+        command='cd '+shlex.quote(str(ROOT))+' && '+shlex.quote(str(INFER/'run.sh'))+' -u '+shlex.quote(str(script))+''.join(' '+shlex.quote(a) for a in launch.get('args',[]))+'; echo; read -r -p "Session ended. Press Enter to close"; tmux kill-session -t eval'
+        code,_,err=sh(['tmux','new-session','-d','-s',TMUX,'-n','client',command])
+        return code==0, 'SpaceMouse ready for on-site confirmation' if code==0 else err
     try:
-        stiff=float(p.get('stiffness',1.5));ki=float(p.get('ki',0));kimax=float(p.get('ki_max',3))
-        hold=p.get('grip_hold');hold=None if hold in (None,'','off') else float(hold)
-    except ValueError:return False,'参数格式不对'
-    if hold is not None and not 0.5<=hold<=4:return False,'两轮之间夹持力应在 0.5–4 N·m'
-    if not (0.5<=stiff<=3.0 and 0<=ki<=5 and 0<kimax<=6):return False,'参数超出范围（刚度 0.5–3，ki 0–5，上限 ≤6°）'
+        stiff=p.get('stiffness');stiff=None if stiff in (None,'','default') else float(stiff)  # None = default dimos gains (2026-10-09)
+        ki=float(p.get('ki',2));kimax=float(p.get('ki_max',1))
+        hold=p.get('grip_hold',1.5);hold=None if hold in (None,'','off') else float(hold)  # omitted = 1.5 N·m, the same as the client script's default
+    except ValueError:return False,'Invalid parameter format'
+    if hold is not None and not 0.5<=hold<=4:return False,'Grip hold between trials must be 0.5–4 N·m'
+    if not ((stiff is None or 0.5<=stiff<=3.0) and 0<=ki<=5 and 0<kimax<=6):return False,'Parameter out of range (stiffness 0.5–3 or empty for default gains, ki 0–5, cap ≤6°)'
     env=dict(os.environ,A1Z_NO_ATTACH='1')
-    args=['--stiffness',f'{stiff}','--ki',f'{ki}','--ki-max',f'{kimax}']+(['--grip-hold',f'{hold}'] if hold is not None else [])
-    if mode in ('eval','hil'):
+    args=(['--stiffness',f'{stiff}'] if stiff is not None else [])+['--ki',f'{ki}','--ki-max',f'{kimax}']+(['--grip-hold',f'{hold}'] if hold is not None else [])
+    if launch.get('type')!='eval_sh':return False,'Unknown mode'
+    lead=list(launch.get('args',[]))
+    if 'model' in prog['inputs']:
         ck=p.get('model','')
-        if not re.fullmatch(r'[A-Za-z0-9._-]+',ck) or not (CKPTS/ck/'pretrained_model'/'model.safetensors').exists():return False,'找不到这个模型'
+        if not re.fullmatch(r'[A-Za-z0-9._-]+',ck) or not (CKPTS/ck/'pretrained_model'/'model.safetensors').exists():return False,'Model not found'
         env['CKPT']=str(CKPTS/ck/'pretrained_model')
-        if mode=='hil':
-            try:ep=int(p.get('epoch',1))
-            except ValueError:return False,'epoch 格式不对'
-            args=['--hil','--epoch',str(ep)]+args
-        cmd=[str(INFER/'eval.sh')]+args
-    elif mode=='control':cmd=[str(INFER/'eval.sh'),'--control']+args
-    else:return False,'未知模式'
+    if 'epoch' in prog['inputs']:
+        try:ep=int(p.get('epoch',1))
+        except ValueError:return False,'Invalid epoch'
+        lead+=['--epoch',str(ep)]
+    cmd=[str(INFER/'eval.sh')]+lead+args
     def run():subprocess.run(cmd,env=env,capture_output=True,text=True,timeout=60)
     threading.Thread(target=run,daemon=True).start()
-    return True,'会话启动中（模型加载约 10 秒）'
+    return True,'Session starting (model load takes ~10 s)'
 
 def close_session():
     st=session_state()
-    if st['state']=='none':return True,'没有会话'
-    if st['state'] not in ('ended',):return False,'客户端还在运行：先在页面里按两次「退出」'
-    sh(['tmux','kill-session','-t',TMUX]);return True,'会话已关闭'
+    if st['state']=='none':return True,'No session'
+    if st['state'] not in ('ended',):return False,'Client still running: click Quit session on the page first'
+    sh(['tmux','kill-session','-t',TMUX]);return True,'Session closed'
+
+
+# ---------------- side camera (HIL-SERL) ----------------
+def has_tmux(name):return sh(['tmux','has-session','-t',name])[0]==0
+
+def side_status():
+    age=time.time()-os.path.getmtime(SIDE_LIVE) if os.path.exists(SIDE_LIVE) else None
+    info=load_json(Path(SIDE_INFO)) if os.path.exists(SIDE_INFO) else None
+    cams=(load_json(CAMERAS) if CAMERAS.exists() else None) or {}
+    return {'age':None if age is None else round(age,2),'camera':info,'preview':has_tmux('sidecam'),'actor':has_tmux('hil'),
+            'size':[SIDE_W,SIDE_H],'crop_side':cams.get('crop_side'),'saved_at':cams.get('crop_side_saved_at'),
+            'crop':cams.get('crop'),'crop_saved_at':cams.get('crop_saved_at'),
+            'wrist_age':round(time.time()-os.path.getmtime(LIVE),1) if os.path.exists(LIVE) else None,
+            'installed':(HILSERL/'side_preview.py').exists()}
+
+def side_preview(on):
+    if not on:
+        if has_tmux('sidecam'):sh(['tmux','kill-session','-t','sidecam'])
+        return True,'Preview stopped'
+    if has_tmux('hil'):return False,'The HIL-SERL actor is running and already streams the side camera'
+    if has_tmux('sidecam'):return True,'Preview already running'
+    if not (HILSERL/'side_preview.py').exists():return False,'side_preview.py not installed on Jetson'
+    cmd='cd '+shlex.quote(str(HILSERL))+' && exec '+shlex.quote(str(INFER/'run.sh'))+' side_preview.py --headless'
+    code,_,err=sh(['tmux','new-session','-d','-s','sidecam','/bin/bash','--noprofile','--norc','-c',cmd])
+    return code==0,'Preview starting (camera warm-up ~3 s)' if code==0 else err
+
+def side_crop(p):
+    """Save a 640x480 crop to cameras.json: {'crop_side':[x,y,w,h]} for the side camera or {'crop':[...]} for the wrist."""
+    key='crop' if 'crop' in p else 'crop_side'
+    try:x,y,w,h=[int(v) for v in p.get(key)]
+    except (TypeError,ValueError):return False,f'{key} must be four integers'
+    if not (w>=32 and h>=32 and x>=0 and y>=0 and x+w<=SIDE_W and y+h<=SIDE_H):return False,'Crop must lie inside the 640x480 image'
+    d=(load_json(CAMERAS) if CAMERAS.exists() else None) or {}
+    d.update({key:[x,y,w,h],key+'_saved_at':time.strftime('%Y-%m-%dT%H:%M:%S')})
+    tmp=CAMERAS.with_suffix('.tmp');tmp.write_text(json.dumps(d,indent=1));os.replace(tmp,CAMERAS)
+    flag='--crop' if key=='crop' else '--crop-side'
+    return True,f'Saved {"wrist" if key=="crop" else "side"} crop {x} {y} {w} {h} (used by actor.py when {flag} is not given)'
 
 
 # ---------------- telemetry ----------------
@@ -172,6 +258,12 @@ class FlightReader:
 
 _readers={}
 def telemetry():
+    if session_state().get('mode')=='teleop':
+        try:data=json.loads((ROOT/'spacemouse-state.json').read_text())
+        except (OSError,ValueError):data={}
+        live=time.time()-data.get('updated_at',0)<2 and data.get('state') in ('teleop_active','teleop_hold')
+        return {'session':None,'kind':'teleop','live':live,'spacemouse':data,
+                'tip_mm':data.get('tip_mm') if live else None,'temp_rotor':data.get('temp_rotor') if live else None}
     ns=newest_session()
     if ns is None:return {'session':None}
     mtime,kind,s=ns;f=s/'flight.jsonl'
@@ -236,8 +328,8 @@ def session_summary(kind,s):
     ki=first.get('ki',0) or 0
     # integral v1 (plain, wound up under the policy) ran until ~11:58 on 2026-10-05; v2 integrates only while stuck
     kiv=first.get('ki_version') or (None if not ki else ('v1' if s.name<'20261005-115800' else 'v2'))
-    return {'kind':kind,'session':s.name,'ki_version':kiv,'smooth':bool(first.get('smooth')),'model':Path(ck).parent.name if ck else ('控制层测试' if kind=='control' else None),
-            'stiffness':first.get('stiffness'),'ki':first.get('ki',0) or 0,'epoch':first.get('epoch'),
+    return {'kind':kind,'session':s.name,'ki_version':kiv,'smooth':bool(first.get('smooth')),'model':Path(ck).parent.name if ck else ('control test' if kind=='control' else None),
+            'stiffness':first.get('stiffness') if first.get('stiffness') is not None else ('kp '+'/'.join(f'{v:g}' for v in first['kp']) if first.get('kp') else None),'ki':first.get('ki',0) or 0,'epoch':first.get('epoch'),
             'trials':len(trials),'valid':sum(not x['excluded'] for x in trials),
             'labels':{k:sum(1 for x in trials if not x['excluded'] and x['label']==k) for k in ('missed','found_port','in_mouth','inserted','charging')},
             'usb':sum(1 for x in trials if not x['excluded'] and x['usb'])}
@@ -257,17 +349,17 @@ def run_detail(kind,name):
 
 def edit_trial(p):
     kind=p.get('kind');name=p.get('session','');fname=p.get('file','')
-    if kind not in KINDS or not re.fullmatch(r'\d{8}-\d{6}',name) or not re.fullmatch(r'(trial|run)-\d\d\.json',fname):return False,'参数不对'
+    if kind not in KINDS or not re.fullmatch(r'\d{8}-\d{6}',name) or not re.fullmatch(r'(trial|run)-\d\d\.json',fname):return False,'Invalid parameters'
     f=KINDS[kind]/name/fname
-    if not f.exists():return False,'找不到这一轮'
+    if not f.exists():return False,'Trial not found'
     t=json.loads(f.read_text());edits=t.setdefault('console_edits',[])
     if 'label' in p:
         lab={'1':'missed','2':'found_port' if kind!='control' else 'in_mouth','3':'inserted' if kind!='control' else 'charging'}.get(str(p['label']))
-        if not lab:return False,'标签只能是 1/2/3'
+        if not lab:return False,'Label must be 1/2/3'
         edits.append({'t':time.time(),'label_from':t.get('operator_label'),'label_to':lab});t['operator_label']=lab;t['operator_label_auto']=False
     if 'excluded' in p:
         edits.append({'t':time.time(),'excluded':bool(p['excluded'])});t['excluded']=bool(p['excluded'])
-    t['edited_via']='console';f.write_text(json.dumps(t));return True,'已保存'
+    t['edited_via']='console';f.write_text(json.dumps(t));return True,'Saved'
 
 
 # ---------------- report ----------------
@@ -296,7 +388,7 @@ def report():
         out.append({**g,'n':n,'labelled':len(labelled),'found':found,'found_ci':wilson(found,len(labelled)),
                     'power':power,'power_ci':wilson(power,n),'err_n':len(errs),'err_median':med,
                     'err_mean':round(sum(errs)/len(errs),2) if errs else None})
-    out.sort(key=lambda x:(x['ki'] or 0,x['stiffness'] or 0,x['model'] or ''),reverse=True)
+    out.sort(key=lambda x:(x['ki'] or 0,str(x['stiffness'] or ''),x['model'] or ''),reverse=True)  # stiffness may be a gains label
     return out
 
 
@@ -315,8 +407,8 @@ def models():
                     'size_mb':round((pm/'model.safetensors').stat().st_size/1e6,1)})
     return out
 
-DESCR={'060000':'原始 ACT：45 条示范，6 万步','020000':'原始 ACT 的 2 万步中间点','hil-e1-ft':'+1 轮 HIL 纠正（从 060000 微调）',
-       'hil-e1-scratch':'+1 轮 HIL 纠正（从头训练）','hil-e2-ft':'+2 轮 HIL 纠正（从 hil-e1-ft 微调）'}
+DESCR={'060000':'Base ACT: 45 demos, 60k steps','020000':'Base ACT, 20k-step checkpoint','hil-e1-ft':'+1 round of HIL corrections (fine-tuned from 060000)',
+       'hil-e1-scratch':'+1 round of HIL corrections (trained from scratch)','hil-e2-ft':'+2 rounds of HIL corrections (fine-tuned from hil-e1-ft)'}
 
 def data_summary():
     col=load_json(ROOT/'collection.json') or {}
@@ -332,7 +424,7 @@ def data_summary():
                     'kept':sum(1 for t in ts if t.get('hil_keep',True) and t.get('success')),'discarded':sum(1 for t in ts if t.get('hil_keep') is False)})
     return {'demos':{'total':len(eps),'usable':sum(1 for e in eps if not e.get('excluded') and e.get('usb_inserted')),
                      'excluded':sum(1 for e in eps if e.get('excluded'))},'hil':hil,
-            'note':'训练集（act-v2、agg-e1、agg-e2）在 Mac 的 ~/a1z-data/usb-insert-20261003/datasets/'}
+            'note':'Training sets (act-v2, agg-e1, agg-e2) are on the Mac in ~/a1z-data/usb-insert-20261003/datasets/'}
 
 
 # ---------------- HTTP ----------------
@@ -361,6 +453,7 @@ class H(BaseHTTPRequestHandler):
                 ctype={'.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'}.get(f.suffix,'application/octet-stream')
                 return self._send(200,f.read_bytes(),ctype+'; charset=utf-8')
             if p=='/api/session':return self._send(200,session_state())
+            if p=='/api/programs':return self._send(200,programs_public())
             if p=='/api/telemetry':return self._send(200,telemetry())
             if p=='/api/usb':return self._send(200,usb_status())
             if p=='/api/runs':return self._send(200,list_runs())
@@ -375,6 +468,10 @@ class H(BaseHTTPRequestHandler):
                 if not os.path.exists(LIVE):return self._send(404,{'error':'no frame'})
                 age=time.time()-os.path.getmtime(LIVE)
                 return self._send(200,open(LIVE,'rb').read(),'image/jpeg',{'X-Frame-Age':f'{age:.2f}'})
+            if p=='/api/side':return self._send(200,side_status())
+            if p=='/api/side.jpg':
+                if not os.path.exists(SIDE_LIVE):return self._send(404,{'error':'no frame'})
+                return self._send(200,open(SIDE_LIVE,'rb').read(),'image/jpeg')
             if p.startswith('/api/video/'):return self._video(p)
             return self._send(404,{'error':'not found'})
         except Exception as e:
@@ -413,6 +510,8 @@ class H(BaseHTTPRequestHandler):
             elif path=='/api/session/key':ok,msg=send_key(str(p.get('key','')))
             elif path=='/api/session/close':ok,msg=close_session()
             elif path=='/api/trial/edit':ok,msg=edit_trial(p)
+            elif path=='/api/side/preview':ok,msg=side_preview(bool(p.get('on')))
+            elif path=='/api/side/crop':ok,msg=side_crop(p)
             else:return self._send(404,{'error':'not found'})
         except Exception as e:ok,msg=False,repr(e)
         return self._send(200 if ok else 409,{'ok':ok,'message':msg})

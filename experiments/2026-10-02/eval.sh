@@ -6,6 +6,7 @@
 #   eval.sh --calib       port height calibration (drag mode, keys 1/2/3)
 #   eval.sh --control [--stiffness S]  control-layer test without a model (A1 teach-and-return, A2 record-and-replay)
 #   eval.sh --hil --epoch N   HG-DAgger collection with the epoch-N novice (CKPT=...): Space takes over / hands back
+#   eval.sh --rl <snap|check|demo|train|eval> [args]   HIL-SERL last-centimetre RL (RL-RECOVERY.md)
 CKPT=${CKPT:-/home/dimos/a1z-infer/checkpoints/060000/pretrained_model}
 EXP='cd $HOME/a1z-experiments/2026-10-02 && $HOME/a1z-infer/run.sh'
 # A session left without its client window (client crashed or was closed) cannot be reattached: start over.
@@ -18,6 +19,9 @@ if ! tmux has-session -t eval 2>/dev/null; then
   elif [ "$1" = "--control" ]; then
     shift
     tmux new -d -s eval -n client /bin/bash --noprofile --norc -c "$EXP control_test.py $*; echo; read -p '按回车关闭'; tmux kill-session -t eval"
+  elif [ "$1" = "--rl" ]; then
+    shift
+    tmux new -d -s eval -n client /bin/bash --noprofile --norc -c "$EXP rl_run.py $*; echo; read -p '按回车关闭'; tmux kill-session -t eval"
   elif [ "$1" = "--no-policy" ]; then
     tmux new -d -s eval -n client /bin/bash --noprofile --norc -c "$EXP a1z_client.py $*; echo; read -p '按回车关闭'; tmux kill-session -t eval"
   else

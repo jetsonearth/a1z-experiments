@@ -126,9 +126,12 @@ class MotionGate:
 
 
 def gripper_max_torque():
-    """Vendor get_a1z_robot default is 2.0 Nm; gripper_max_torque.txt beside this file overrides."""
+    """Vendor get_a1z_robot default is 2.0 Nm; gripper_max_torque.txt beside this file overrides; the environment
+    variable A1Z_GRIPPER_NM overrides both for one run (rl_run.py --grip-full)."""
     path = Path(__file__).resolve().parent / 'gripper_max_torque.txt'
     value = float(path.read_text().strip()) if path.exists() else 2.0
+    if os.environ.get('A1Z_GRIPPER_NM'):
+        value = float(os.environ['A1Z_GRIPPER_NM'])
     if not 0.5 <= value <= 6.0:
         raise ValueError(f'gripper_max_torque {value} Nm outside reviewed range [0.5, 6.0]')
     return value

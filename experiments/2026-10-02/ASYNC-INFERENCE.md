@@ -1,5 +1,7 @@
 # A1Z asynchronous inference: fresh-observation adapter
 
+Current execution repair: see [CONTINUITY.md](CONTINUITY.md) for the continuous_stream_v2 sender, chunk splice and bounded_accel_v2 tracker. The sections below document the earlier fresh-observation adapter and its initial deployment.
+
 Implementation date: 2026-10-05. Deployed to Jetson at 16:51; server startup and client READY gate verified at 16:53. Not physically validated.
 
 ## Problem and scope

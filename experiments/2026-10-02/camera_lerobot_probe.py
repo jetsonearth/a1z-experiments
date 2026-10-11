@@ -22,7 +22,8 @@ def main():
             'observation.camera_host_monotonic_s': {'dtype':'float64','shape':(1,),'names':['host_receipt_s']},
         },use_videos=True,streaming_encoding=False,image_writer_processes=0,image_writer_threads=2,
         vcodec='h264',encoder_threads=2)
-    pipe=rs.pipeline();config=rs.config()
+    from wrist_camera import enable_wrist
+    pipe=rs.pipeline();config=rs.config();enable_wrist(rs,config)
     config.enable_stream(rs.stream.color,640,480,rs.format.rgb8,30)
     config.enable_stream(rs.stream.depth,640,480,rs.format.z16,30)
     rows=[];profile=None;error=None

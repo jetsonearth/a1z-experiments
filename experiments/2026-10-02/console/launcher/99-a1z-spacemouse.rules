@@ -1,0 +1,2 @@
+# Only SpaceMouse Compact, read access for the Jetson operator's existing group.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="256f", ATTRS{idProduct}=="c635", GROUP="dimos", MODE="0640"

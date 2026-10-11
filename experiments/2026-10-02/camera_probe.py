@@ -21,8 +21,10 @@ def main():
     if not 1 <= args.seconds <= 15:
         parser.error('probe duration must be 1–15 seconds')
     args.output.mkdir(parents=True, exist_ok=False)
+    from wrist_camera import enable_wrist
     pipe = rs.pipeline()
     config = rs.config()
+    enable_wrist(rs, config)
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
     config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
     if args.native_recording:

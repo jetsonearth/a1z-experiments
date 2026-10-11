@@ -49,7 +49,7 @@ class FakeUsb:
 class FakeClient:
     instance=None
     def __init__(self,cfg):
-        FakeClient.instance=self;self.action_chunk_size=30
+        FakeClient.instance=self;self.action_chunk_size=30;self.config=cfg
         self.action_queue=Queue();self.action_queue_lock=threading.Lock();self.latest_action=5;self.latest_action_lock=threading.Lock()
         self.must_go=threading.Event();self.logger=types.SimpleNamespace(setLevel=lambda *_:None);self.start_barrier=types.SimpleNamespace(wait=lambda:None)
         self.steps=0
